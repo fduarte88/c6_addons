@@ -1,0 +1,77 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{{ action }} Categoría — c6 Store{% endblock %}
+{% block header_title %}{{ action }} Categoría{% endblock %}
+{% block nav_categories %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">{{ action }} Categoría</h1>
+        <p class="page-subtitle">
+            {% if action == 'Crear' %}Crea una nueva categoría de productos
+            {% else %}Editando categoría <strong>{{ category.name }}</strong>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{% url 'category_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+    </a>
+</div>
+
+<div class="form-card" style="max-width:540px;">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Datos de la categoría</h3>
+            <div class="form-grid form-grid--2">
+
+                {% with field=form.name %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.tipo %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    <small class="field-hint">Determina si el producto requiere calce o talle.</small>
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.description %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% if action == 'Editar' %}
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <label class="toggle-switch">
+                        {{ form.is_active }}
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Categoría activa</span>
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'category_list' %}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">
+                {% if action == 'Crear' %}Crear categoría{% else %}Guardar cambios{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

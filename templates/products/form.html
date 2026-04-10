@@ -1,0 +1,229 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{{ action }} Producto — c6 Store{% endblock %}
+{% block header_title %}{{ action }} Producto{% endblock %}
+{% block nav_products %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">{{ action }} Producto</h1>
+        <p class="page-subtitle">
+            {% if action == 'Registrar' %}Completa los datos del nuevo producto
+            {% else %}Editando: <strong>{{ product.description }}</strong>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{% url 'product_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Identificación -->
+        <div class="form-section">
+            <h3 class="form-section-title">Identificación</h3>
+            <div class="form-grid">
+                {% with field=form.description %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.origin %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.category %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Talla (condicional) -->
+        <div class="form-section" id="section-size">
+            <h3 class="form-section-title" id="size-title">Talla</h3>
+            <div class="form-grid form-grid--2">
+
+                <div class="form-group {% if form.calce.errors %}has-error{% endif %}" id="field-calce" style="display:none;">
+                    <label class="form-label" for="{{ form.calce.id_for_label }}">
+                        {{ form.calce.label }}
+                        <span class="required-badge">requerido</span>
+                    </label>
+                    {{ form.calce }}
+                    {% if form.calce.errors %}<span class="field-error">{{ form.calce.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group {% if form.talle.errors %}has-error{% endif %}" id="field-talle" style="display:none;">
+                    <label class="form-label" for="{{ form.talle.id_for_label }}">
+                        {{ form.talle.label }}
+                        <span class="required-badge">requerido</span>
+                    </label>
+                    {{ form.talle }}
+                    {% if form.talle.errors %}<span class="field-error">{{ form.talle.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div id="no-size-msg" class="no-size-msg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    Selecciona una categoría para ver si requiere talla.
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock y precios -->
+        <div class="form-section">
+            <h3 class="form-section-title">Stock y Precios</h3>
+            <div class="form-grid">
+                {% with field=form.quantity %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.cost %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }} <span class="currency-hint">$</span>
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.list_price %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }} <span class="currency-hint">$</span>
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.distributor_price %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }} <span class="currency-hint">$</span>
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+
+            <!-- Indicador de margen en tiempo real -->
+            <div class="margin-indicator" id="margin-box" style="display:none;">
+                <span class="margin-label">Margen sobre costo:</span>
+                <span class="margin-value" id="margin-value">—</span>
+            </div>
+        </div>
+
+        <!-- Estado -->
+        {% if action == 'Editar' %}
+        <div class="form-section">
+            <h3 class="form-section-title">Estado</h3>
+            <div class="form-grid form-grid--2">
+                <div class="form-group">
+                    <label class="form-label">Estado del producto</label>
+                    <label class="toggle-switch">
+                        {{ form.is_active }}
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Producto activo</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{% url 'product_list' %}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">
+                {% if action == 'Registrar' %}Registrar producto{% else %}Guardar cambios{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mapa de tipos de categoría inyectado desde Django
+const CATEGORY_TYPES = {{ category_types|safe }};
+
+const catSelect   = document.getElementById('id_category');
+const fieldCalce  = document.getElementById('field-calce');
+const fieldTalle  = document.getElementById('field-talle');
+const noSizeMsg   = document.getElementById('no-size-msg');
+const sizeTitle   = document.getElementById('size-title');
+const costInput   = document.getElementById('id_cost');
+const priceInput  = document.getElementById('id_list_price');
+const marginBox   = document.getElementById('margin-box');
+const marginValue = document.getElementById('margin-value');
+
+function updateSizeFields() {
+    const tipo = CATEGORY_TYPES[catSelect.value] || '';
+
+    fieldCalce.style.display = (tipo === 'CAL') ? 'flex' : 'none';
+    fieldTalle.style.display = (tipo === 'VES') ? 'flex' : 'none';
+
+    if (tipo === 'CAL') {
+        noSizeMsg.style.display = 'none';
+        sizeTitle.textContent   = 'Calce (Calzado)';
+    } else if (tipo === 'VES') {
+        noSizeMsg.style.display = 'none';
+        sizeTitle.textContent   = 'Talle (Vestimenta)';
+    } else if (catSelect.value) {
+        noSizeMsg.style.display = 'flex';
+        noSizeMsg.innerHTML     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Esta categoría no requiere talla.';
+        sizeTitle.textContent   = 'Talla';
+    } else {
+        noSizeMsg.style.display = 'flex';
+        noSizeMsg.innerHTML     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Selecciona una categoría para ver si requiere talla.';
+        sizeTitle.textContent   = 'Talla';
+    }
+}
+
+function updateMargin() {
+    const cost  = parseFloat(costInput.value);
+    const price = parseFloat(priceInput.value);
+    if (cost > 0 && price > 0) {
+        const pct = ((price - cost) / cost * 100).toFixed(1);
+        marginValue.textContent = pct + '%';
+        marginValue.className   = 'margin-value ' + (pct >= 0 ? 'margin-pos' : 'margin-neg');
+        marginBox.style.display = 'flex';
+    } else {
+        marginBox.style.display = 'none';
+    }
+}
+
+catSelect.addEventListener('change', updateSizeFields);
+costInput.addEventListener('input', updateMargin);
+priceInput.addEventListener('input', updateMargin);
+
+// Inicializar al cargar (modo edición)
+updateSizeFields();
+updateMargin();
+</script>
+{% endblock %}

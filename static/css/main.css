@@ -1034,6 +1034,159 @@ body {
 .form-group--full { grid-column: 1 / -1; }
 
 /* =========================================
+   PRODUCTS
+   ========================================= */
+
+/* Badges de tipo de categoría */
+.tipo-badge {
+    display: inline-block;
+    padding: .15rem .55rem;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    white-space: nowrap;
+}
+.tipo-gen { background: var(--surface-dark); color: var(--sea-charcoal); }
+.tipo-cal { background: #e8f4f0; color: #2a6b57; }
+.tipo-ves { background: #ece8f5; color: #5a3d8a; }
+
+/* Badge de tipo en categorías admin */
+.tipo-badge.tipo-gen { background: var(--surface-dark);   color: var(--sea-charcoal); }
+.tipo-badge.tipo-cal { background: #e8f4f0; color: #2a6b57; }
+.tipo-badge.tipo-ves { background: #ece8f5; color: #5a3d8a; }
+
+/* Stock badges en tabla */
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    padding: .15rem .5rem;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 700;
+}
+.stock-ok   { background: #eef5f0; color: #2d6a4f; }
+.stock-low  { background: #fff5e6; color: #b45309; }
+.stock-zero { background: #fef0f0; color: #c0392b; }
+
+/* Fila sin stock */
+.row-no-stock { background: #fefafa !important; }
+.row-no-stock:hover { background: #fdf5f5 !important; }
+
+/* Columnas numéricas */
+.col-id    { color: var(--text-muted); font-size: .85rem; }
+.col-price { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+
+/* Nombre de producto en tabla */
+.product-name { font-weight: 600; }
+
+/* Indicador de margen */
+.margin-indicator {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: 1rem;
+    padding: .6rem 1rem;
+    background: var(--surface-alt);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    width: fit-content;
+}
+.margin-label { font-size: .85rem; color: var(--text-muted); }
+.margin-value { font-size: 1rem; font-weight: 700; }
+.margin-pos   { color: #2d6a4f; }
+.margin-neg   { color: #c0392b; }
+
+/* Campo condicional calce/talle */
+#field-calce, #field-talle { flex-direction: column; }
+
+.no-size-msg {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--text-muted);
+    font-size: .875rem;
+    padding: .5rem 0;
+}
+.no-size-msg svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* Required badge */
+.required-badge {
+    display: inline-block;
+    margin-left: .4rem;
+    padding: .05rem .4rem;
+    background: #e8f0f5;
+    color: var(--sea-mid);
+    border-radius: 4px;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+/* Currency hint */
+.currency-hint {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: .85rem;
+}
+
+/* Field hint */
+.field-hint {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: .2rem;
+}
+
+/* Price cards en detail */
+.price-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.price-card {
+    padding: 1.25rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+.price-card--cost { background: var(--surface-alt); border: 1px solid var(--border); }
+.price-card--list { background: #eef5f0; border: 1px solid #a8d5b5; }
+.price-card--dist { background: #e8f0f5; border: 1px solid var(--sea-steel); }
+
+.price-card-label  { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.price-card-value  { font-size: 1.5rem; font-weight: 800; color: var(--sea-navy); font-variant-numeric: tabular-nums; }
+.price-card-margin { font-size: .8rem; color: #2d6a4f; font-weight: 600; }
+
+/* Stock en detalle */
+.stock-detail-box {
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    margin-top: .5rem;
+    width: 100%;
+}
+.stock-ok-box   { background: #eef5f0; border: 1px solid #a8d5b5; }
+.stock-low-box  { background: #fff5e6; border: 1px solid #f6c67a; }
+.stock-zero-box { background: #fef0f0; border: 1px solid #f5a8a8; }
+
+.stock-detail-number { display: block; font-size: 2.5rem; font-weight: 900; line-height: 1; color: var(--sea-navy); }
+.stock-detail-label  { font-size: .8rem; color: var(--text-muted); }
+
+/* Product avatar en detail */
+.product-detail-avatar {
+    background: linear-gradient(135deg, var(--sea-charcoal), var(--sea-slate));
+    border-radius: var(--radius-sm);
+    width: 80px; height: 80px;
+}
+.product-detail-avatar svg { width: 36px; height: 36px; stroke: rgba(255,255,255,.85); }
+
+/* =========================================
    RESPONSIVE
    ========================================= */
 

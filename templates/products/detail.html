@@ -1,0 +1,110 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{{ product.description }} — c6 Store{% endblock %}
+{% block header_title %}Detalle del Producto{% endblock %}
+{% block nav_products %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">{{ product.description }}</h1>
+        <p class="page-subtitle">ID #{{ product.pk }} &mdash; {{ product.category.name }}</p>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+        <a href="{% url 'product_edit' product.pk %}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Editar
+        </a>
+        <a href="{% url 'product_list' %}" class="btn btn-ghost">Volver</a>
+    </div>
+</div>
+
+<div class="detail-layout">
+
+    <!-- Tarjeta resumen -->
+    <div class="detail-profile-card">
+        <div class="detail-avatar product-detail-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+        </div>
+        <h2 class="detail-name">{{ product.description }}</h2>
+        <span class="tipo-badge tipo-{{ product.category.tipo|lower }}">
+            {{ product.category.name }}
+        </span>
+        <span class="status-badge {% if product.is_active %}status-active{% else %}status-inactive{% endif %}">
+            {% if product.is_active %}Activo{% else %}Inactivo{% endif %}
+        </span>
+
+        {% if product.size_display != '—' %}
+        <div class="detail-meta-item" style="margin-top:.5rem;">
+            <span class="doc-type-badge">{{ product.size_display }}</span>
+        </div>
+        {% endif %}
+
+        <div class="stock-detail-box {% if product.quantity == 0 %}stock-zero-box{% elif product.quantity < 5 %}stock-low-box{% else %}stock-ok-box{% endif %}">
+            <span class="stock-detail-number">{{ product.quantity }}</span>
+            <span class="stock-detail-label">unidades en stock</span>
+        </div>
+
+        <div class="detail-dates">
+            <span>Origen: <strong>{{ product.origin }}</strong></span>
+            <span>Registrado: {{ product.created_at|date:"d/m/Y" }}</span>
+            <span>Actualizado: {{ product.updated_at|date:"d/m/Y" }}</span>
+        </div>
+    </div>
+
+    <!-- Tarjeta precios -->
+    <div class="detail-data-card">
+        <div class="detail-section">
+            <h3 class="form-section-title">Precios</h3>
+            <div class="price-cards">
+                <div class="price-card price-card--cost">
+                    <span class="price-card-label">Costo</span>
+                    <span class="price-card-value">${{ product.cost|floatformat:2 }}</span>
+                </div>
+                <div class="price-card price-card--list">
+                    <span class="price-card-label">Precio de lista</span>
+                    <span class="price-card-value">${{ product.list_price|floatformat:2 }}</span>
+                    <span class="price-card-margin">Margen: {{ product.margin }}%</span>
+                </div>
+                <div class="price-card price-card--dist">
+                    <span class="price-card-label">Precio distribuidor</span>
+                    <span class="price-card-value">${{ product.distributor_price|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3 class="form-section-title">Información adicional</h3>
+            <div class="detail-grid">
+                <div class="detail-field">
+                    <span class="detail-label">Categoría</span>
+                    <span class="detail-value">{{ product.category.name }} ({{ product.category.get_tipo_display }})</span>
+                </div>
+                <div class="detail-field">
+                    <span class="detail-label">Origen</span>
+                    <span class="detail-value">{{ product.origin }}</span>
+                </div>
+                {% if product.calce %}
+                <div class="detail-field">
+                    <span class="detail-label">Calce</span>
+                    <span class="detail-value">{{ product.calce }}</span>
+                </div>
+                {% endif %}
+                {% if product.talle %}
+                <div class="detail-field">
+                    <span class="detail-label">Talle</span>
+                    <span class="detail-value">{{ product.talle }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
