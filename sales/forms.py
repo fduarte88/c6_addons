@@ -44,8 +44,31 @@ class SaleItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['product'].queryset = Product.objects.filter(is_active=True).select_related('category').order_by('description')
+        # Solo productos activos CON stock disponible
+        self.fields['product'].queryset = (
+            Product.objects.filter(is_active=True, quantity__gt=0)
+                           .select_related('category')
+                           .order_by('description')
+        )
         self.fields['product'].empty_label = 'Selecciona un producto'
+
+    def clean(self):
+        cleaned = super().clean()
+        product  = cleaned.get('product')
+        quantity = cleaned.get('quantity')
+
+        if product and quantity:
+            if product.quantity == 0:
+                self.add_error(
+                    'product',
+                    f'"{product.description}" no tiene stock disponible.'
+                )
+            elif quantity > product.quantity:
+                self.add_error(
+                    'quantity',
+                    f'Stock insuficiente. Disponible: {product.quantity} unidad(es).'
+                )
+        return cleaned
 
 
 # Formset inline — mínimo 1 item, máximo 50

@@ -49,7 +49,9 @@ def customer_create(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
-            customer = form.save()
+            customer = form.save(commit=False)
+            customer.is_active = True   # siempre activo al crear
+            customer.save()
             messages.success(request, f'Cliente "{customer.full_name}" registrado correctamente.')
             return redirect('customer_list')
     else:

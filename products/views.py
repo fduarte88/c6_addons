@@ -120,7 +120,9 @@ def product_create(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            product.is_active = True    # siempre activo al crear
+            product.save()
             messages.success(request, f'Producto "{product.description}" registrado correctamente.')
             return redirect('product_list')
     else:
