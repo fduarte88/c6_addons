@@ -9,6 +9,7 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),
     path('clientes/', include('customers.urls')),
     path('productos/', include('products.urls')),
+    path('ventas/', include('sales.urls')),
     path('accounts/', include('accounts.urls')),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),
 ]

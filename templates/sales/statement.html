@@ -1,0 +1,112 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Estado de Cuenta — {{ customer.full_name }}{% endblock %}
+{% block header_title %}Estado de Cuenta{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Estado de Cuenta</h1>
+        <p class="page-subtitle">{{ customer.full_name }} &mdash; {{ customer.get_doc_type_display }} {{ customer.doc_number }}</p>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+        <a href="{% url 'sale_create' %}" class="btn btn-primary">+ Nueva venta</a>
+        <a href="{% url 'customer_detail' customer.pk %}" class="btn btn-ghost">Ver cliente</a>
+    </div>
+</div>
+
+<!-- Resumen global -->
+<div class="sale-summary-grid" style="margin-bottom:1.5rem;">
+    <div class="sale-summary-card">
+        <span class="summary-label">Total facturado</span>
+        <span class="summary-value">{{ total_ventas|gs }}</span>
+    </div>
+    <div class="sale-summary-card summary-paid">
+        <span class="summary-label">Total pagado</span>
+        <span class="summary-value">{{ total_pagado|gs }}</span>
+    </div>
+    <div class="sale-summary-card {% if total_saldo > 0 %}summary-balance{% endif %}">
+        <span class="summary-label">Saldo total</span>
+        <span class="summary-value">{{ total_saldo|gs }}</span>
+    </div>
+    <div class="sale-summary-card">
+        <span class="summary-label">Ventas registradas</span>
+        <span class="summary-value">{{ sales|length }}</span>
+    </div>
+</div>
+
+<!-- Ventas del cliente -->
+{% for sale in sales %}
+<div class="statement-sale-card {% if sale.status == 'cancelled' %}statement-cancelled{% endif %}">
+    <div class="statement-sale-header">
+        <div class="statement-sale-info">
+            <span class="statement-sale-id">Venta #{{ sale.pk }}</span>
+            <span class="statement-sale-date">{{ sale.date|date:"d/m/Y" }}</span>
+            {% if sale.notes %}<span class="statement-sale-notes">{{ sale.notes }}</span>{% endif %}
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+            <span class="sale-status sale-status--{{ sale.status }}">{{ sale.get_status_display }}</span>
+            <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-ghost" style="padding:.3rem .8rem;font-size:.82rem;">Ver detalle</a>
+        </div>
+    </div>
+
+    <div class="statement-body">
+        <!-- Productos -->
+        <div class="statement-items">
+            <table class="data-table" style="font-size:.85rem;">
+                <thead>
+                    <tr>
+                        <th>Producto</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sale.items.all %}
+                    <tr>
+                        <td>{{ item.product.description }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td class="col-price">{{ item.unit_price|gs }}</td>
+                        <td class="col-price">{{ item.subtotal|gs }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagos y saldo -->
+        <div class="statement-payments">
+            <div class="statement-fin-row">
+                <span>Total venta</span>
+                <strong>{{ sale.total|gs }}</strong>
+            </div>
+            {% for p in sale.payments.all %}
+            <div class="statement-fin-row statement-pay-row">
+                <span>
+                    <span class="pay-type-badge pay-type--{{ p.payment_type|lower }}">{{ p.get_payment_type_display }}</span>
+                    {{ p.date|date:"d/m/Y" }}
+                    {% if p.reference %}<em>({{ p.reference }})</em>{% endif %}
+                </span>
+                <span class="pay-amount">- {{ p.amount|gs }}</span>
+            </div>
+            {% empty %}
+            <div class="statement-fin-row" style="color:var(--text-muted);font-style:italic;">
+                <span>Sin pagos</span><span>—</span>
+            </div>
+            {% endfor %}
+            <div class="statement-fin-row statement-saldo-row {% if sale.balance > 0 and sale.status != 'cancelled' %}saldo-pendiente{% endif %}">
+                <span><strong>Saldo</strong></span>
+                <strong>{{ sale.balance|gs }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="table-empty" style="padding:3rem;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    Este cliente no tiene ventas registradas.
+</div>
+{% endfor %}
+{% endblock %}

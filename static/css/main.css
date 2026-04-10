@@ -1034,6 +1034,156 @@ body {
 .form-group--full { grid-column: 1 / -1; }
 
 /* =========================================
+   SALES & PAYMENTS
+   ========================================= */
+
+/* Estado de la venta */
+.sale-status {
+    display: inline-block;
+    padding: .18rem .65rem;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.sale-status--pending   { background: #fff5e6; color: #b45309; }
+.sale-status--partial   { background: #ece8f5; color: #5a3d8a; }
+.sale-status--paid      { background: #eef5f0; color: #2d6a4f; }
+.sale-status--cancelled { background: #f5f0ee; color: #7a4030; }
+
+/* Saldo destacado */
+.saldo-pendiente { color: #c0392b; font-weight: 700; }
+
+/* Resumen financiero arriba del detalle */
+.sale-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sale-summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+.summary-paid    { border-left: 3px solid #74c69d; }
+.summary-balance { border-left: 3px solid #c0392b; }
+
+.summary-label  { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.summary-value  { font-size: 1.3rem; font-weight: 800; color: var(--sea-navy); font-variant-numeric: tabular-nums; }
+.summary-status { font-size: .9rem; margin-top: .25rem; }
+
+/* Botón pago en tabla */
+.btn-icon--pay { color: #2d6a4f; background: rgba(45,106,79,.1); }
+.btn-icon--pay:hover { background: rgba(45,106,79,.2); }
+
+/* Tabla de items en formulario de venta */
+.items-table-wrap { overflow-x: auto; }
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+}
+.items-table th {
+    padding: .6rem .75rem;
+    text-align: left;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+}
+.items-table td { padding: .6rem .75rem; border-bottom: 1px solid var(--surface-dark); vertical-align: middle; }
+.items-table tfoot td { padding: .75rem; border-top: 2px solid var(--border); background: var(--surface-alt); }
+.items-table .item-row:last-child td { border-bottom: none; }
+
+.items-table .item-product { width: 100%; min-width: 160px; }
+.items-table .item-qty     { width: 64px; text-align: center; }
+.items-table .item-price   { width: 110px; text-align: right; }
+.item-subtotal             { font-weight: 700; white-space: nowrap; }
+.items-total-row td        { font-size: 1rem; }
+
+/* Badges tipo de pago */
+.pay-type-badge {
+    display: inline-block;
+    padding: .1rem .45rem;
+    border-radius: 4px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    margin-right: .25rem;
+}
+.pay-type--efe { background: #eef5f0; color: #2d6a4f; }
+.pay-type--trf { background: #e8f0f5; color: var(--sea-slate); }
+.pay-type--tar { background: #ece8f5; color: #5a3d8a; }
+
+/* Estado de cuenta por cliente */
+.statement-sale-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+.statement-cancelled { opacity: .7; }
+
+.statement-sale-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .875rem 1.25rem;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+.statement-sale-info { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.statement-sale-id   { font-weight: 800; color: var(--sea-navy); }
+.statement-sale-date { font-size: .85rem; color: var(--text-muted); }
+.statement-sale-notes { font-size: .82rem; color: var(--text-muted); font-style: italic; }
+
+.statement-body {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+}
+
+.statement-items { padding: 1rem 1.25rem; border-right: 1px solid var(--surface-dark); overflow-x: auto; }
+
+.statement-payments {
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.statement-fin-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .875rem;
+    padding: .25rem 0;
+}
+.statement-pay-row { color: var(--text-muted); border-top: 1px dashed var(--surface-dark); padding-top: .4rem; }
+.statement-saldo-row {
+    border-top: 2px solid var(--border);
+    padding-top: .5rem;
+    margin-top: .25rem;
+    font-size: .95rem;
+}
+.pay-amount { color: #2d6a4f; font-weight: 600; }
+
+/* =========================================
    PRODUCTS
    ========================================= */
 

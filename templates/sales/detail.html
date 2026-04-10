@@ -1,0 +1,161 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Venta #{{ sale.pk }} — c6 Store{% endblock %}
+{% block header_title %}Venta #{{ sale.pk }}{% endblock %}
+{% block nav_sales %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Venta #{{ sale.pk }}</h1>
+        <p class="page-subtitle">{{ sale.customer.full_name }} &mdash; {{ sale.date|date:"d/m/Y" }}</p>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        {% if sale.status != 'paid' and sale.status != 'cancelled' %}
+        <a href="{% url 'payment_add' sale.pk %}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            Registrar pago
+        </a>
+        {% endif %}
+        <a href="{% url 'customer_statement' sale.customer.pk %}" class="btn btn-secondary">Estado de cuenta</a>
+        {% if sale.status != 'cancelled' %}
+        <a href="{% url 'sale_cancel' sale.pk %}" class="btn btn-ghost" style="color:#c0392b;border-color:#c0392b;">Cancelar venta</a>
+        {% endif %}
+        <a href="{% url 'sale_list' %}" class="btn btn-ghost">Volver</a>
+    </div>
+</div>
+
+<!-- Resumen financiero -->
+<div class="sale-summary-grid">
+    <div class="sale-summary-card">
+        <span class="summary-label">Total venta</span>
+        <span class="summary-value">{{ sale.total|gs }}</span>
+    </div>
+    <div class="sale-summary-card summary-paid">
+        <span class="summary-label">Total pagado</span>
+        <span class="summary-value">{{ sale.total_paid|gs }}</span>
+    </div>
+    <div class="sale-summary-card {% if sale.balance > 0 %}summary-balance{% endif %}">
+        <span class="summary-label">Saldo pendiente</span>
+        <span class="summary-value">{{ sale.balance|gs }}</span>
+    </div>
+    <div class="sale-summary-card">
+        <span class="summary-label">Estado</span>
+        <span class="sale-status sale-status--{{ sale.status }} summary-status">{{ sale.get_status_display }}</span>
+    </div>
+</div>
+
+<div class="detail-layout" style="grid-template-columns:1fr 1fr;gap:1.25rem;">
+
+    <!-- Productos -->
+    <div class="detail-data-card">
+        <div class="detail-section">
+            <h3 class="form-section-title">Productos vendidos</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cant.</th>
+                        <th>Precio unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sale.items.all %}
+                    <tr>
+                        <td>
+                            <div class="username">{{ item.product.description }}</div>
+                            <div class="cell-sub">{{ item.product.category.name }}</div>
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td class="col-price">{{ item.unit_price|gs }}</td>
+                        <td class="col-price"><strong>{{ item.subtotal|gs }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background:var(--surface-alt);">
+                        <td colspan="3" style="text-align:right;font-weight:700;padding:.75rem 1rem;">Total</td>
+                        <td class="col-price" style="font-weight:800;">{{ sale.total|gs }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% if sale.notes %}
+        <div class="detail-section">
+            <h3 class="form-section-title">Observaciones</h3>
+            <p style="color:var(--text-muted);font-size:.9rem;">{{ sale.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagos -->
+    <div class="detail-data-card">
+        <div class="detail-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                <h3 class="form-section-title" style="margin-bottom:0;">Historial de pagos</h3>
+                {% if sale.status != 'paid' and sale.status != 'cancelled' %}
+                <a href="{% url 'payment_add' sale.pk %}" class="btn btn-primary" style="padding:.4rem .9rem;font-size:.82rem;">
+                    + Nuevo pago
+                </a>
+                {% endif %}
+            </div>
+
+            {% if sale.payments.exists %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Referencia</th>
+                        <th>Monto</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in sale.payments.all %}
+                    <tr>
+                        <td>{{ p.date|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="pay-type-badge pay-type--{{ p.payment_type|lower }}">
+                                {{ p.get_payment_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ p.reference|default:"—" }}</td>
+                        <td class="col-price"><strong>{{ p.amount|gs }}</strong></td>
+                        <td>
+                            <a href="{% url 'payment_delete' p.pk %}" class="btn-icon btn-icon--delete" title="Eliminar pago">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                    <path d="M10 11v6"/><path d="M14 11v6"/>
+                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background:var(--surface-alt);">
+                        <td colspan="3" style="text-align:right;font-weight:700;padding:.75rem 1rem;">Total pagado</td>
+                        <td class="col-price" style="font-weight:800;">{{ sale.total_paid|gs }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% else %}
+            <div class="table-empty" style="padding:2rem 0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+                Sin pagos registrados.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

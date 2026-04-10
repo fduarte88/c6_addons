@@ -1,0 +1,133 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Registrar Pago — c6 Store{% endblock %}
+{% block header_title %}Registrar Pago{% endblock %}
+{% block nav_sales %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Registrar Pago</h1>
+        <p class="page-subtitle">Venta #{{ sale.pk }} — {{ sale.customer.full_name }}</p>
+    </div>
+    <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+    </a>
+</div>
+
+<!-- Resumen saldo -->
+<div class="sale-summary-grid" style="margin-bottom:1.5rem;">
+    <div class="sale-summary-card">
+        <span class="summary-label">Total venta</span>
+        <span class="summary-value">{{ sale.total|gs }}</span>
+    </div>
+    <div class="sale-summary-card summary-paid">
+        <span class="summary-label">Ya pagado</span>
+        <span class="summary-value">{{ sale.total_paid|gs }}</span>
+    </div>
+    <div class="sale-summary-card summary-balance">
+        <span class="summary-label">Saldo pendiente</span>
+        <span class="summary-value" id="saldo-display">{{ sale.balance|gs }}</span>
+    </div>
+</div>
+
+<div class="form-card" style="max-width:560px;">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Datos del pago</h3>
+            <div class="form-grid form-grid--2">
+
+                {% with field=form.date %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.payment_type %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.amount %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                    <div class="margin-indicator" id="nuevo-saldo-box" style="display:none;margin-top:.5rem;">
+                        <span class="margin-label">Nuevo saldo tras este pago:</span>
+                        <span class="margin-value" id="nuevo-saldo-value"></span>
+                    </div>
+                </div>
+                {% endwith %}
+
+                {% with field=form.reference %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}" id="reference-group" style="display:none;">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.notes %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Confirmar pago</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const saldo = {{ sale.balance }};
+
+function fmtGs(n) {
+    const v = Math.round(Number(n) || 0);
+    return 'Gs. ' + v.toLocaleString('es-PY').replace(/,/g, '.');
+}
+
+const amountInput  = document.getElementById('id_amount');
+const typeSelect   = document.getElementById('id_payment_type');
+const refGroup     = document.getElementById('reference-group');
+const nuevoBox     = document.getElementById('nuevo-saldo-box');
+const nuevoVal     = document.getElementById('nuevo-saldo-value');
+
+function updatePreview() {
+    const monto = parseFloat(amountInput.value) || 0;
+    if (monto > 0) {
+        const nuevo = saldo - monto;
+        nuevoVal.textContent  = fmtGs(nuevo < 0 ? 0 : nuevo);
+        nuevoVal.className    = 'margin-value ' + (nuevo <= 0 ? 'margin-pos' : 'margin-neg');
+        nuevoBox.style.display = 'flex';
+    } else {
+        nuevoBox.style.display = 'none';
+    }
+}
+
+function toggleRef() {
+    refGroup.style.display = (typeSelect.value === 'TRF') ? 'flex' : 'none';
+}
+
+amountInput.addEventListener('input', updatePreview);
+typeSelect.addEventListener('change', toggleRef);
+toggleRef();
+updatePreview();
+</script>
+{% endblock %}

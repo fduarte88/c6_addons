@@ -1,0 +1,186 @@
+import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import Q, Sum
+from customers.models import Customer
+from products.models import Product
+from .models import Sale, SaleItem, Payment
+from .forms import SaleForm, SaleItemFormSet, PaymentForm
+
+
+# ──────────────────────────────────────────
+# VENTAS — Lista
+# ──────────────────────────────────────────
+
+@login_required
+def sale_list(request):
+    query   = request.GET.get('q', '').strip()
+    status  = request.GET.get('status', '')
+    sales   = Sale.objects.select_related('customer').prefetch_related('items', 'payments')
+
+    if query:
+        sales = sales.filter(
+            Q(customer__first_name__icontains=query) |
+            Q(customer__last_name__icontains=query)  |
+            Q(customer__doc_number__icontains=query)  |
+            Q(pk__icontains=query)
+        )
+    if status:
+        sales = sales.filter(status=status)
+
+    context = {
+        'sales':          sales,
+        'query':          query,
+        'status_filter':  status,
+        'status_choices': Sale.STATUS_CHOICES,
+        'total_ventas':   Sale.objects.count(),
+        'total_pending':  Sale.objects.filter(status=Sale.STATUS_PENDING).count(),
+        'total_partial':  Sale.objects.filter(status=Sale.STATUS_PARTIAL).count(),
+        'total_paid':     Sale.objects.filter(status=Sale.STATUS_PAID).count(),
+    }
+    return render(request, 'sales/list.html', context)
+
+
+# ──────────────────────────────────────────
+# VENTAS — Crear
+# ──────────────────────────────────────────
+
+@login_required
+def sale_create(request):
+    # JSON de precios de productos para JS
+    prices = {str(p.pk): float(p.list_price)
+              for p in Product.objects.filter(is_active=True)}
+
+    if request.method == 'POST':
+        form    = SaleForm(request.POST)
+        formset = SaleItemFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                sale = form.save()
+                formset.instance = sale
+                formset.save()
+                sale.update_status()
+            messages.success(request, f'Venta #{sale.pk} registrada correctamente.')
+            return redirect('sale_detail', pk=sale.pk)
+    else:
+        form    = SaleForm()
+        formset = SaleItemFormSet()
+
+    return render(request, 'sales/form.html', {
+        'form':      form,
+        'formset':   formset,
+        'action':    'Nueva',
+        'prices_json': json.dumps(prices),
+    })
+
+
+# ──────────────────────────────────────────
+# VENTAS — Detalle
+# ──────────────────────────────────────────
+
+@login_required
+def sale_detail(request, pk):
+    sale = get_object_or_404(
+        Sale.objects.select_related('customer')
+                    .prefetch_related('items__product', 'payments'),
+        pk=pk
+    )
+    payment_form = PaymentForm(sale=sale, initial={'date': sale.date})
+    return render(request, 'sales/detail.html', {
+        'sale':         sale,
+        'payment_form': payment_form,
+    })
+
+
+# ──────────────────────────────────────────
+# VENTAS — Cancelar
+# ──────────────────────────────────────────
+
+@login_required
+def sale_cancel(request, pk):
+    sale = get_object_or_404(Sale, pk=pk)
+    if request.method == 'POST':
+        sale.status = Sale.STATUS_CANCELLED
+        sale.save(update_fields=['status'])
+        messages.success(request, f'Venta #{sale.pk} cancelada.')
+        return redirect('sale_list')
+    return render(request, 'sales/confirm_cancel.html', {'sale': sale})
+
+
+# ──────────────────────────────────────────
+# PAGOS — Agregar pago a una venta
+# ──────────────────────────────────────────
+
+@login_required
+def payment_add(request, sale_pk):
+    sale = get_object_or_404(Sale, pk=sale_pk)
+
+    if sale.status == Sale.STATUS_PAID:
+        messages.error(request, 'Esta venta ya está totalmente pagada.')
+        return redirect('sale_detail', pk=sale.pk)
+
+    if sale.status == Sale.STATUS_CANCELLED:
+        messages.error(request, 'No se pueden registrar pagos en una venta cancelada.')
+        return redirect('sale_detail', pk=sale.pk)
+
+    if request.method == 'POST':
+        form = PaymentForm(sale=sale, data=request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.sale = sale
+            payment.save()  # sale.update_status() se llama en Payment.save()
+            messages.success(
+                request,
+                f'Pago de Gs. {payment.amount:,.0f} registrado. '
+                f'Saldo restante: Gs. {sale.balance:,.0f}.'
+            )
+            return redirect('sale_detail', pk=sale.pk)
+    else:
+        form = PaymentForm(sale=sale)
+
+    return render(request, 'sales/payment_form.html', {'form': form, 'sale': sale})
+
+
+# ──────────────────────────────────────────
+# PAGOS — Eliminar pago
+# ──────────────────────────────────────────
+
+@login_required
+def payment_delete(request, pk):
+    payment = get_object_or_404(Payment, pk=pk)
+    sale    = payment.sale
+    if request.method == 'POST':
+        payment.delete()
+        sale.update_status()
+        messages.success(request, 'Pago eliminado.')
+        return redirect('sale_detail', pk=sale.pk)
+    return render(request, 'sales/payment_confirm_delete.html', {'payment': payment})
+
+
+# ──────────────────────────────────────────
+# ESTADO DE CUENTA — por cliente
+# ──────────────────────────────────────────
+
+@login_required
+def customer_statement(request, customer_pk):
+    customer = get_object_or_404(Customer, pk=customer_pk)
+    sales    = Sale.objects.filter(customer=customer) \
+                           .prefetch_related('items__product', 'payments') \
+                           .order_by('-date', '-created_at')
+
+    # Totales globales del cliente
+    total_ventas  = sum(s.total       for s in sales)
+    total_pagado  = sum(s.total_paid  for s in sales)
+    total_saldo   = sum(s.balance     for s in sales
+                        if s.status != Sale.STATUS_CANCELLED)
+
+    context = {
+        'customer':     customer,
+        'sales':        sales,
+        'total_ventas': total_ventas,
+        'total_pagado': total_pagado,
+        'total_saldo':  total_saldo,
+    }
+    return render(request, 'sales/statement.html', context)

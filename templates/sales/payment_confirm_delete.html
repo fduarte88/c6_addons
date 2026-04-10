@@ -1,0 +1,33 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Eliminar Pago — c6 Store{% endblock %}
+{% block header_title %}Eliminar Pago{% endblock %}
+{% block nav_sales %}active{% endblock %}
+
+{% block content %}
+<div class="confirm-card">
+    <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+    <h2 class="confirm-title">¿Eliminar este pago?</h2>
+    <p class="confirm-text">
+        Venta #{{ payment.sale.pk }}<br>
+        Monto: <strong>{{ payment.amount|gs }}</strong><br>
+        Tipo: <strong>{{ payment.get_payment_type_display }}</strong><br>
+        Fecha: <strong>{{ payment.date|date:"d/m/Y" }}</strong><br><br>
+        Esta acción actualizará el saldo de la venta.
+    </p>
+    <div class="confirm-actions">
+        <a href="{% url 'sale_detail' payment.sale.pk %}" class="btn btn-ghost">Cancelar</a>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

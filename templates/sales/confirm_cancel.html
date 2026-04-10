@@ -1,0 +1,31 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Cancelar Venta — c6 Store{% endblock %}
+{% block header_title %}Cancelar Venta{% endblock %}
+{% block nav_sales %}active{% endblock %}
+
+{% block content %}
+<div class="confirm-card">
+    <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+    <h2 class="confirm-title">¿Cancelar la venta #{{ sale.pk }}?</h2>
+    <p class="confirm-text">
+        Cliente: <strong>{{ sale.customer.full_name }}</strong><br>
+        Total: <strong>{{ sale.total|gs }}</strong><br><br>
+        Esta acción marcará la venta como cancelada. Los pagos existentes quedarán registrados.
+    </p>
+    <div class="confirm-actions">
+        <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-ghost">Volver</a>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, cancelar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

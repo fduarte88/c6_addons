@@ -1,0 +1,138 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Ventas — c6 Store{% endblock %}
+{% block header_title %}Ventas{% endblock %}
+{% block nav_sales %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Ventas</h1>
+        <p class="page-subtitle">Registro de ventas y cobros</p>
+    </div>
+    <a href="{% url 'sale_create' %}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva venta
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid stats-grid--sm">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon--blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+        </div>
+        <div class="stat-body"><span class="stat-value">{{ total_ventas }}</span><span class="stat-label">Total ventas</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#fff5e6;color:#b45309;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+        </div>
+        <div class="stat-body"><span class="stat-value">{{ total_pending }}</span><span class="stat-label">Pendientes</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#ece8f5;color:#5a3d8a;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.38"/>
+            </svg>
+        </div>
+        <div class="stat-body"><span class="stat-value">{{ total_partial }}</span><span class="stat-label">Pago parcial</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon--steel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        </div>
+        <div class="stat-body"><span class="stat-value">{{ total_paid }}</span><span class="stat-label">Pagadas</span></div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="filter-bar">
+    <form method="get" class="filter-form">
+        <div class="search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" name="q" value="{{ query }}" placeholder="Buscar por cliente, documento o nro. venta..." class="search-input">
+        </div>
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">Todos los estados</option>
+            {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary">Buscar</button>
+        {% if query or status_filter %}<a href="{% url 'sale_list' %}" class="btn btn-ghost">Limpiar</a>{% endif %}
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Pagado</th>
+                <th>Saldo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sales %}
+            <tr>
+                <td class="col-id">{{ s.pk }}</td>
+                <td>
+                    <div class="user-cell">
+                        <div class="avatar-sm">{{ s.customer.initials }}</div>
+                        <a href="{% url 'customer_statement' s.customer.pk %}" class="table-link">{{ s.customer.full_name }}</a>
+                    </div>
+                </td>
+                <td>{{ s.date|date:"d/m/Y" }}</td>
+                <td class="col-price">{{ s.total|gs }}</td>
+                <td class="col-price">{{ s.total_paid|gs }}</td>
+                <td class="col-price {% if s.balance > 0 %}saldo-pendiente{% endif %}">{{ s.balance|gs }}</td>
+                <td><span class="sale-status sale-status--{{ s.status }}">{{ s.get_status_display }}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <a href="{% url 'sale_detail' s.pk %}" class="btn-icon btn-icon--view" title="Ver detalle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </a>
+                        {% if s.status != 'paid' and s.status != 'cancelled' %}
+                        <a href="{% url 'payment_add' s.pk %}" class="btn-icon btn-icon--pay" title="Registrar pago">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="table-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    No se encontraron ventas.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
