@@ -29,7 +29,7 @@ class CustomerForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
             'last_name':  forms.TextInput(attrs={'placeholder': 'Apellido'}),
             'phone':      forms.TextInput(attrs={'placeholder': '9X XXX XXXX', 'class': 'phone-local', 'id': 'id_phone'}),
-            'email':      forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com'}),
+            'email':      forms.EmailInput(attrs={'placeholder': 'info@info.com'}),
             'city':       forms.TextInput(attrs={'placeholder': 'Ej: Bogotá'}),
             'address':    forms.TextInput(attrs={'placeholder': 'Calle, número, barrio'}),
         }
