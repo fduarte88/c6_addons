@@ -28,7 +28,7 @@ class CustomerForm(forms.ModelForm):
             'doc_number': forms.TextInput(attrs={'placeholder': 'Ej: 1234567890'}),
             'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
             'last_name':  forms.TextInput(attrs={'placeholder': 'Apellido'}),
-            'phone':      forms.TextInput(attrs={'placeholder': '985 858 585', 'class': 'phone-local', 'id': 'id_phone'}),
+            'phone':      forms.TextInput(attrs={'placeholder': '9X XXX XXXX', 'class': 'phone-local', 'id': 'id_phone'}),
             'email':      forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com'}),
             'city':       forms.TextInput(attrs={'placeholder': 'Ej: Bogotá'}),
             'address':    forms.TextInput(attrs={'placeholder': 'Calle, número, barrio'}),

@@ -628,8 +628,8 @@ body {
 /* Phone input group */
 .phone-field-wrapper {
     display: flex;
-    align-items: center;
-    gap: .5rem;
+    flex-direction: column;
+    gap: .4rem;
 }
 .phone-input-group {
     display: flex;
