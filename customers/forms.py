@@ -28,11 +28,19 @@ class CustomerForm(forms.ModelForm):
             'doc_number': forms.TextInput(attrs={'placeholder': 'Ej: 1234567890'}),
             'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
             'last_name':  forms.TextInput(attrs={'placeholder': 'Apellido'}),
-            'phone':      forms.TextInput(attrs={'placeholder': 'Ej: 985858585 (el prefijo 595 se agrega automáticamente)'}),
+            'phone':      forms.TextInput(attrs={'placeholder': '985 858 585', 'class': 'phone-local', 'id': 'id_phone'}),
             'email':      forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com'}),
             'city':       forms.TextInput(attrs={'placeholder': 'Ej: Bogotá'}),
             'address':    forms.TextInput(attrs={'placeholder': 'Calle, número, barrio'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Al editar, mostrar solo el número local (sin el prefijo 595)
+        if self.instance and self.instance.pk and self.instance.phone:
+            phone = self.instance.phone
+            if phone.startswith('595'):
+                self.initial['phone'] = phone[3:]
 
     def clean_phone(self):
         value = self.cleaned_data.get('phone', '')
