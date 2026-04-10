@@ -1,4 +1,5 @@
 {% extends 'base_dashboard.html' %}
+{% load guarani %}
 
 {% block title %}Productos — c6 Store{% endblock %}
 {% block header_title %}Productos{% endblock %}
@@ -121,9 +122,9 @@
                         {{ p.quantity }}
                     </span>
                 </td>
-                <td class="col-price">${{ p.cost|floatformat:2 }}</td>
-                <td class="col-price">${{ p.list_price|floatformat:2 }}</td>
-                <td class="col-price">${{ p.distributor_price|floatformat:2 }}</td>
+                <td class="col-price">{{ p.cost|gs }}</td>
+                <td class="col-price">{{ p.list_price|gs }}</td>
+                <td class="col-price">{{ p.distributor_price|gs }}</td>
                 <td>{{ p.size_display }}</td>
                 <td>
                     <span class="status-badge {% if p.is_active %}status-active{% else %}status-inactive{% endif %}">

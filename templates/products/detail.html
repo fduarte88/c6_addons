@@ -1,4 +1,5 @@
 {% extends 'base_dashboard.html' %}
+{% load guarani %}
 
 {% block title %}{{ product.description }} — c6 Store{% endblock %}
 {% block header_title %}Detalle del Producto{% endblock %}
@@ -66,16 +67,16 @@
             <div class="price-cards">
                 <div class="price-card price-card--cost">
                     <span class="price-card-label">Costo</span>
-                    <span class="price-card-value">${{ product.cost|floatformat:2 }}</span>
+                    <span class="price-card-value">{{ product.cost|gs }}</span>
                 </div>
                 <div class="price-card price-card--list">
                     <span class="price-card-label">Precio de lista</span>
-                    <span class="price-card-value">${{ product.list_price|floatformat:2 }}</span>
+                    <span class="price-card-value">{{ product.list_price|gs }}</span>
                     <span class="price-card-margin">Margen: {{ product.margin }}%</span>
                 </div>
                 <div class="price-card price-card--dist">
                     <span class="price-card-label">Precio distribuidor</span>
-                    <span class="price-card-value">${{ product.distributor_price|floatformat:2 }}</span>
+                    <span class="price-card-value">{{ product.distributor_price|gs }}</span>
                 </div>
             </div>
         </div>

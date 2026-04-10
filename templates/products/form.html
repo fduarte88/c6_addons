@@ -105,7 +105,7 @@
                 {% with field=form.cost %}
                 <div class="form-group {% if field.errors %}has-error{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
-                        {{ field.label }} <span class="currency-hint">$</span>
+                        {{ field.label }} <span class="currency-hint">Gs.</span>
                     </label>
                     {{ field }}
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
@@ -115,7 +115,7 @@
                 {% with field=form.list_price %}
                 <div class="form-group {% if field.errors %}has-error{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
-                        {{ field.label }} <span class="currency-hint">$</span>
+                        {{ field.label }} <span class="currency-hint">Gs.</span>
                     </label>
                     {{ field }}
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
@@ -125,7 +125,7 @@
                 {% with field=form.distributor_price %}
                 <div class="form-group {% if field.errors %}has-error{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
-                        {{ field.label }} <span class="currency-hint">$</span>
+                        {{ field.label }} <span class="currency-hint">Gs.</span>
                     </label>
                     {{ field }}
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
