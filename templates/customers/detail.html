@@ -1,0 +1,80 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{{ customer.full_name }} — c6 Store{% endblock %}
+{% block header_title %}Detalle del Cliente{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">{{ customer.full_name }}</h1>
+        <p class="page-subtitle">Información completa del cliente</p>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+        <a href="{% url 'customer_edit' customer.pk %}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Editar
+        </a>
+        <a href="{% url 'customer_list' %}" class="btn btn-ghost">Volver</a>
+    </div>
+</div>
+
+<div class="detail-layout">
+
+    <!-- Tarjeta perfil -->
+    <div class="detail-profile-card">
+        <div class="detail-avatar">{{ customer.initials }}</div>
+        <h2 class="detail-name">{{ customer.full_name }}</h2>
+        <span class="status-badge {% if customer.is_active %}status-active{% else %}status-inactive{% endif %}">
+            {% if customer.is_active %}Activo{% else %}Inactivo{% endif %}
+        </span>
+        <div class="detail-meta-item">
+            <span class="doc-type-badge">{{ customer.get_doc_type_display }}</span>
+            <span class="doc-number">{{ customer.doc_number }}</span>
+        </div>
+        <div class="detail-dates">
+            <span>Registrado: {{ customer.created_at|date:"d/m/Y" }}</span>
+            <span>Actualizado: {{ customer.updated_at|date:"d/m/Y" }}</span>
+        </div>
+    </div>
+
+    <!-- Tarjeta datos -->
+    <div class="detail-data-card">
+        <div class="detail-section">
+            <h3 class="form-section-title">Contacto</h3>
+            <div class="detail-grid">
+                <div class="detail-field">
+                    <span class="detail-label">Teléfono</span>
+                    <span class="detail-value">
+                        <a href="tel:{{ customer.phone }}" class="table-link">{{ customer.phone }}</a>
+                    </span>
+                </div>
+                <div class="detail-field">
+                    <span class="detail-label">Correo electrónico</span>
+                    <span class="detail-value">
+                        <a href="mailto:{{ customer.email }}" class="table-link">{{ customer.email }}</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3 class="form-section-title">Ubicación</h3>
+            <div class="detail-grid">
+                <div class="detail-field">
+                    <span class="detail-label">Ciudad</span>
+                    <span class="detail-value">{{ customer.city }}</span>
+                </div>
+                <div class="detail-field detail-field--full">
+                    <span class="detail-label">Dirección particular</span>
+                    <span class="detail-value">{{ customer.address }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

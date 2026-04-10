@@ -1,0 +1,30 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Eliminar Cliente — c6 Store{% endblock %}
+{% block header_title %}Eliminar Cliente{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block content %}
+<div class="confirm-card">
+    <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+    <h2 class="confirm-title">¿Eliminar cliente?</h2>
+    <p class="confirm-text">
+        Estás a punto de eliminar al cliente <strong>{{ customer.full_name }}</strong>
+        ({{ customer.get_doc_type_display }} {{ customer.doc_number }}).
+        <br>Esta acción no se puede deshacer.
+    </p>
+    <div class="confirm-actions">
+        <a href="{% url 'customer_list' %}" class="btn btn-ghost">Cancelar</a>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{{ action }} Cliente — c6 Store{% endblock %}
+{% block header_title %}{{ action }} Cliente{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">{{ action }} Cliente</h1>
+        <p class="page-subtitle">
+            {% if action == 'Registrar' %}Completa los datos para registrar un nuevo cliente
+            {% else %}Editando cliente <strong>{{ customer.full_name }}</strong>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{% url 'customer_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Documento -->
+        <div class="form-section">
+            <h3 class="form-section-title">Identificación</h3>
+            <div class="form-grid">
+                {% with field=form.doc_type %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.doc_number %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Datos personales -->
+        <div class="form-section">
+            <h3 class="form-section-title">Datos personales</h3>
+            <div class="form-grid">
+                {% with field=form.first_name %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.last_name %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.phone %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.email %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Ubicación -->
+        <div class="form-section">
+            <h3 class="form-section-title">Ubicación</h3>
+            <div class="form-grid">
+                {% with field=form.city %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.address %}
+                <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Estado -->
+        {% if action == 'Editar' %}
+        <div class="form-section">
+            <h3 class="form-section-title">Estado</h3>
+            <div class="form-grid form-grid--2">
+                <div class="form-group">
+                    <label class="form-label">Estado del cliente</label>
+                    <label class="toggle-switch">
+                        {{ form.is_active }}
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Cliente activo</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{% url 'customer_list' %}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">
+                {% if action == 'Registrar' %}Registrar cliente{% else %}Guardar cambios{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
