@@ -18,7 +18,7 @@ class Customer(models.Model):
     first_name = models.CharField('Nombre', max_length=100)
     last_name  = models.CharField('Apellido', max_length=100)
     phone      = models.CharField('Teléfono', max_length=25)
-    email      = models.EmailField('Correo electrónico', unique=True)
+    email      = models.EmailField('Correo electrónico', blank=True, default='info@info.com')
     city       = models.CharField('Ciudad', max_length=100)
     address    = models.CharField('Dirección particular', max_length=200)
     is_active  = models.BooleanField('Activo', default=True)

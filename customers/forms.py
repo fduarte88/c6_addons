@@ -36,6 +36,7 @@ class CustomerForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['email'].required = False
         # Al editar, mostrar solo el número local (sin el prefijo 595)
         if self.instance and self.instance.pk and self.instance.phone:
             phone = self.instance.phone
@@ -62,9 +63,6 @@ class CustomerForm(forms.ModelForm):
 
     def clean_email(self):
         value = self.cleaned_data.get('email', '').strip().lower()
-        qs = Customer.objects.filter(email=value)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise forms.ValidationError('Ya existe un cliente con ese correo electrónico.')
+        if not value:
+            return 'info@info.com'
         return value
