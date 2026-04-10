@@ -1,9 +1,30 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .models import UserProfile
+from .forms import UserCreateForm, UserEditForm
 
 
+# ──────────────────────────────────────────
+# Decorador: solo administradores
+# ──────────────────────────────────────────
+def admin_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if not hasattr(request.user, 'profile') or not request.user.profile.is_admin:
+            messages.error(request, 'No tienes permisos para acceder a esta sección.')
+            return redirect('dashboard')
+        return view_func(request, *args, **kwargs)
+    wrapper.__name__ = view_func.__name__
+    return wrapper
+
+
+# ──────────────────────────────────────────
+# Autenticación
+# ──────────────────────────────────────────
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -26,6 +47,99 @@ def logout_view(request):
     return redirect('login')
 
 
+# ──────────────────────────────────────────
+# Dashboard
+# ──────────────────────────────────────────
 @login_required
 def dashboard_view(request):
-    return render(request, 'dashboard.html')
+    total_users    = User.objects.count()
+    total_admins   = UserProfile.objects.filter(role=UserProfile.ADMIN).count()
+    total_operators = UserProfile.objects.filter(role=UserProfile.OPERATOR).count()
+    context = {
+        'total_users':     total_users,
+        'total_admins':    total_admins,
+        'total_operators': total_operators,
+    }
+    return render(request, 'dashboard.html', context)
+
+
+# ──────────────────────────────────────────
+# Gestión de usuarios (solo admin)
+# ──────────────────────────────────────────
+@login_required
+@admin_required
+def user_list(request):
+    query = request.GET.get('q', '').strip()
+    role  = request.GET.get('role', '')
+    users = User.objects.select_related('profile').order_by('username')
+
+    if query:
+        users = users.filter(username__icontains=query) \
+                   | users.filter(first_name__icontains=query) \
+                   | users.filter(last_name__icontains=query) \
+                   | users.filter(email__icontains=query)
+
+    if role in (UserProfile.ADMIN, UserProfile.OPERATOR):
+        users = users.filter(profile__role=role)
+
+    context = {
+        'users':      users,
+        'query':      query,
+        'role_filter': role,
+        'roles':      UserProfile.ROLE_CHOICES,
+    }
+    return render(request, 'accounts/users/list.html', context)
+
+
+@login_required
+@admin_required
+def user_create(request):
+    if request.method == 'POST':
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'Usuario "{user.username}" creado correctamente.')
+            return redirect('user_list')
+    else:
+        form = UserCreateForm()
+
+    return render(request, 'accounts/users/form.html', {'form': form, 'action': 'Crear'})
+
+
+@login_required
+@admin_required
+def user_edit(request, pk):
+    user = get_object_or_404(User, pk=pk)
+
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Usuario "{user.username}" actualizado correctamente.')
+            return redirect('user_list')
+    else:
+        form = UserEditForm(instance=user)
+
+    return render(request, 'accounts/users/form.html', {
+        'form':   form,
+        'action': 'Editar',
+        'edit_user': user,
+    })
+
+
+@login_required
+@admin_required
+def user_delete(request, pk):
+    user = get_object_or_404(User, pk=pk)
+
+    if user == request.user:
+        messages.error(request, 'No puedes eliminar tu propio usuario.')
+        return redirect('user_list')
+
+    if request.method == 'POST':
+        username = user.username
+        user.delete()
+        messages.success(request, f'Usuario "{username}" eliminado correctamente.')
+        return redirect('user_list')
+
+    return render(request, 'accounts/users/confirm_delete.html', {'edit_user': user})

@@ -1,23 +1,56 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base_dashboard.html' %}
 
 {% block title %}Dashboard — c6 Store{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
 
-{% block body %}
-<div class="dashboard-wrapper">
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <span class="brand-c">c</span><span class="brand-6">6</span>
-            <span class="navbar-title">Store</span>
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Bienvenido, {{ request.user.get_full_name|default:request.user.username }}</h1>
+    <p class="page-subtitle">Panel de control — c6 Store</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon--blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
         </div>
-        <div class="navbar-user">
-            <span class="user-greeting">Hola, <strong>{{ request.user.username }}</strong></span>
-            <a href="{% url 'logout' %}" class="btn-logout">Cerrar Sesión</a>
+        <div class="stat-body">
+            <span class="stat-value">{{ total_users }}</span>
+            <span class="stat-label">Usuarios totales</span>
         </div>
-    </nav>
-    <main class="dashboard-main">
-        <h2>Bienvenido a c6 Store</h2>
-        <p>Panel de control en construcción.</p>
-    </main>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon stat-icon--slate">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M6 20v-2a6 6 0 0 1 12 0v2"/>
+                <polyline points="16 11 18 13 22 9"/>
+            </svg>
+        </div>
+        <div class="stat-body">
+            <span class="stat-value">{{ total_admins }}</span>
+            <span class="stat-label">Administradores</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon stat-icon--steel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M6 20v-2a6 6 0 0 1 12 0v2"/>
+            </svg>
+        </div>
+        <div class="stat-body">
+            <span class="stat-value">{{ total_operators }}</span>
+            <span class="stat-label">Operadores</span>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}c6 Store{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo-sm">
+                <span class="brand-c">c</span><span class="brand-6">6</span>
+            </div>
+            <span class="sidebar-brand-name">Store</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-label">Principal</span>
+                <a href="{% url 'dashboard' %}" class="nav-link {% block nav_dashboard %}{% endblock %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+
+            {% if request.user.profile.is_admin %}
+            <div class="nav-section">
+                <span class="nav-section-label">Administración</span>
+                <a href="{% url 'user_list' %}" class="nav-link {% block nav_users %}{% endblock %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Usuarios</span>
+                </a>
+            </div>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user-info">
+                <div class="user-avatar">{{ request.user.username|first|upper }}</div>
+                <div class="user-meta">
+                    <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <span class="user-role-badge {% if request.user.profile.is_admin %}badge-admin{% else %}badge-operator{% endif %}">
+                        {{ request.user.profile.get_role_display }}
+                    </span>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="btn-sidebar-logout" title="Cerrar sesión">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="app-content">
+        <header class="app-header">
+            <button class="sidebar-toggle" onclick="toggleSidebar()" title="Menú">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            <div class="header-title">{% block header_title %}{% endblock %}</div>
+            <div class="header-right">
+                <span class="header-user">{{ request.user.get_full_name|default:request.user.username }}</span>
+            </div>
+        </header>
+
+        {% if messages %}
+        <div class="messages-bar">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible">
+                <span class="alert-icon">{% if message.tags == 'error' %}&#9888;{% else %}&#10003;{% endif %}</span>
+                {{ message }}
+                <button class="alert-close" onclick="this.parentElement.remove()">&#x2715;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="app-main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

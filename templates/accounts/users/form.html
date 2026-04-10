@@ -1,0 +1,129 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{{ action }} Usuario — c6 Store{% endblock %}
+{% block header_title %}{{ action }} Usuario{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">{{ action }} Usuario</h1>
+        <p class="page-subtitle">
+            {% if action == 'Crear' %}Completa los datos para registrar un nuevo usuario
+            {% else %}Modifica los datos del usuario <strong>{{ edit_user.username }}</strong>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{% url 'user_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h3 class="form-section-title">Información de acceso</h3>
+            <div class="form-grid">
+                {% with field=form.username %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% if action == 'Crear' %}
+                {% with field=form.password1 %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.password2 %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">Información personal</h3>
+            <div class="form-grid">
+                {% with field=form.first_name %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.last_name %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.email %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.phone %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">Rol y permisos</h3>
+            <div class="form-grid form-grid--2">
+                {% with field=form.role %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% if action == 'Editar' %}
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <label class="toggle-switch">
+                        {{ form.is_active }}
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Usuario activo</span>
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'user_list' %}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">
+                {% if action == 'Crear' %}Crear usuario{% else %}Guardar cambios{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
