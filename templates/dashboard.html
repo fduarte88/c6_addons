@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — c6 Store{% endblock %}
+
+{% block body %}
+<div class="dashboard-wrapper">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span class="brand-c">c</span><span class="brand-6">6</span>
+            <span class="navbar-title">Store</span>
+        </div>
+        <div class="navbar-user">
+            <span class="user-greeting">Hola, <strong>{{ request.user.username }}</strong></span>
+            <a href="{% url 'logout' %}" class="btn-logout">Cerrar Sesión</a>
+        </div>
+    </nav>
+    <main class="dashboard-main">
+        <h2>Bienvenido a c6 Store</h2>
+        <p>Panel de control en construcción.</p>
+    </main>
+</div>
+{% endblock %}
