@@ -16,29 +16,34 @@ from .forms import SaleForm, SaleItemFormSet, PaymentForm
 
 @login_required
 def sale_list(request):
-    query   = request.GET.get('q', '').strip()
-    status  = request.GET.get('status', '')
-    sales   = Sale.objects.select_related('customer').prefetch_related('items', 'payments')
+    query    = request.GET.get('q', '').strip()
+    active_tab = request.GET.get('tab', 'active')  # active | paid | cancelled
+
+    base_qs = Sale.objects.select_related('customer').prefetch_related('items', 'payments')
 
     if query:
-        sales = sales.filter(
+        base_qs = base_qs.filter(
             Q(customer__first_name__icontains=query) |
             Q(customer__last_name__icontains=query)  |
             Q(customer__doc_number__icontains=query)  |
             Q(pk__icontains=query)
         )
-    if status:
-        sales = sales.filter(status=status)
+
+    sales_active    = base_qs.filter(status__in=[Sale.STATUS_PENDING, Sale.STATUS_PARTIAL]).order_by('-date', '-pk')
+    sales_paid      = base_qs.filter(status=Sale.STATUS_PAID).order_by('-date', '-pk')
+    sales_cancelled = base_qs.filter(status=Sale.STATUS_CANCELLED).order_by('-date', '-pk')
 
     context = {
-        'sales':          sales,
-        'query':          query,
-        'status_filter':  status,
-        'status_choices': Sale.STATUS_CHOICES,
-        'total_ventas':   Sale.objects.count(),
-        'total_pending':  Sale.objects.filter(status=Sale.STATUS_PENDING).count(),
-        'total_partial':  Sale.objects.filter(status=Sale.STATUS_PARTIAL).count(),
-        'total_paid':     Sale.objects.filter(status=Sale.STATUS_PAID).count(),
+        'sales_active':    sales_active,
+        'sales_paid':      sales_paid,
+        'sales_cancelled': sales_cancelled,
+        'query':           query,
+        'active_tab':      active_tab,
+        'total_ventas':    Sale.objects.count(),
+        'total_pending':   Sale.objects.filter(status=Sale.STATUS_PENDING).count(),
+        'total_partial':   Sale.objects.filter(status=Sale.STATUS_PARTIAL).count(),
+        'total_paid':      Sale.objects.filter(status=Sale.STATUS_PAID).count(),
+        'total_cancelled': Sale.objects.filter(status=Sale.STATUS_CANCELLED).count(),
     }
     return render(request, 'sales/list.html', context)
 

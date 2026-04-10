@@ -1,0 +1,42 @@
+{% load guarani %}
+{% for s in sales %}
+<tr>
+    <td class="col-id">{{ s.pk }}</td>
+    <td>
+        <div class="user-cell">
+            <div class="avatar-sm">{{ s.customer.initials }}</div>
+            <a href="{% url 'customer_statement' s.customer.pk %}" class="table-link">{{ s.customer.full_name }}</a>
+        </div>
+    </td>
+    <td>{{ s.date|date:"d/m/Y" }}</td>
+    <td class="col-price">{{ s.total|gs }}</td>
+    <td class="col-price">{{ s.total_paid|gs }}</td>
+    <td class="col-price {% if s.balance > 0 %}saldo-pendiente{% endif %}">{{ s.balance|gs }}</td>
+    <td><span class="sale-status sale-status--{{ s.status }}">{{ s.get_status_display }}</span></td>
+    <td>
+        <div class="action-btns">
+            <a href="{% url 'sale_detail' s.pk %}" class="btn-icon btn-icon--view" title="Ver detalle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+            </a>
+            {% if s.status != 'paid' and s.status != 'cancelled' %}
+            <a href="{% url 'payment_add' s.pk %}" class="btn-icon btn-icon--pay" title="Registrar pago">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+            </a>
+            {% endif %}
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="8" class="table-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        No hay ventas en esta categoría.
+    </td>
+</tr>
+{% endfor %}

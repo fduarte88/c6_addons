@@ -696,6 +696,45 @@ body {
 }
 .btn-danger:hover { background: #a93226; }
 
+/* ── Tabs ── */
+.tabs-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1.25rem;
+}
+.tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .65rem 1.25rem;
+    font-size: .875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+}
+.tab-item:hover { color: var(--sea-navy); }
+.tab-item--active { color: var(--sea-navy); border-bottom-color: var(--sea-steel); font-weight: 600; }
+.tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 .35rem;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.tab-badge--warn  { background: #fff5e6; color: #b45309; }
+.tab-badge--ok    { background: #e6f4ea; color: #1e7e34; }
+.tab-badge--muted { background: var(--surface-dark); color: var(--text-muted); }
+
 /* ── Filter bar ── */
 .filter-bar { margin-bottom: 1.25rem; }
 
