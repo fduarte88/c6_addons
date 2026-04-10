@@ -8,7 +8,7 @@ class Customer(models.Model):
     DOC_RUC      = 'RUC'
     DOC_CHOICES = [
         (DOC_DNI,       'DNI'),
-        (DOC_CEDULA,    'Cédula de ciudadanía'),
+        (DOC_CEDULA,    'Cédula de identidad'),
         (DOC_PASAPORTE, 'Pasaporte'),
         (DOC_RUC,       'RUC / NIT'),
     ]
