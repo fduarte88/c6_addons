@@ -28,11 +28,20 @@ class CustomerForm(forms.ModelForm):
             'doc_number': forms.TextInput(attrs={'placeholder': 'Ej: 1234567890'}),
             'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
             'last_name':  forms.TextInput(attrs={'placeholder': 'Apellido'}),
-            'phone':      forms.TextInput(attrs={'placeholder': 'Ej: +57 300 000 0000'}),
+            'phone':      forms.TextInput(attrs={'placeholder': 'Ej: 985858585 (el prefijo 595 se agrega automáticamente)'}),
             'email':      forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com'}),
             'city':       forms.TextInput(attrs={'placeholder': 'Ej: Bogotá'}),
             'address':    forms.TextInput(attrs={'placeholder': 'Calle, número, barrio'}),
         }
+
+    def clean_phone(self):
+        value = self.cleaned_data.get('phone', '')
+        digits = ''.join(filter(str.isdigit, value))
+        if not digits:
+            raise forms.ValidationError('Ingresa un número de teléfono válido.')
+        if not digits.startswith('595'):
+            digits = '595' + digits
+        return digits
 
     def clean_doc_number(self):
         value = self.cleaned_data.get('doc_number', '').strip()

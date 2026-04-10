@@ -40,3 +40,17 @@ class Customer(models.Model):
     @property
     def initials(self):
         return f'{self.first_name[:1]}{self.last_name[:1]}'.upper()
+
+    @property
+    def whatsapp_url(self):
+        digits = ''.join(filter(str.isdigit, self.phone))
+        return f'https://wa.me/{digits}'
+
+    @property
+    def phone_display(self):
+        """Formatea 595XXXXXXXXX → +595 XXX XXX XXX"""
+        d = ''.join(filter(str.isdigit, self.phone))
+        if d.startswith('595') and len(d) >= 11:
+            local = d[3:]
+            return f'+595 {local[:3]} {local[3:6]} {local[6:]}'
+        return self.phone
