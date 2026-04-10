@@ -49,9 +49,9 @@ def sale_list(request):
 
 @login_required
 def sale_create(request):
-    # JSON de precios de productos para JS
-    prices = {str(p.pk): float(p.list_price)
-              for p in Product.objects.filter(is_active=True)}
+    # JSON de precios distribuidor para autocompletar en el formulario
+    prices = {str(p.pk): float(p.distributor_price)
+              for p in Product.objects.filter(is_active=True, quantity__gt=0)}
 
     if request.method == 'POST':
         form    = SaleForm(request.POST)

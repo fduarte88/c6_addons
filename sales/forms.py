@@ -16,7 +16,10 @@ class SaleForm(forms.ModelForm):
         }
         widgets = {
             'customer': forms.Select(),
-            'date':     forms.DateInput(attrs={'type': 'date'}),
+            'date':     forms.DateInput(
+                            format='%d/%m/%Y',
+                            attrs={'placeholder': 'DD/MM/AAAA', 'class': 'date-dmy'}
+                        ),
             'notes':    forms.Textarea(attrs={'rows': 2, 'placeholder': 'Observaciones opcionales...'}),
         }
 
@@ -25,6 +28,7 @@ class SaleForm(forms.ModelForm):
         self.fields['customer'].queryset = Customer.objects.filter(is_active=True).order_by('last_name', 'first_name')
         self.fields['customer'].empty_label = 'Selecciona un cliente'
         self.fields['notes'].required = False
+        self.fields['date'].input_formats = ['%d/%m/%Y', '%Y-%m-%d']
 
 
 class SaleItemForm(forms.ModelForm):
@@ -94,7 +98,10 @@ class PaymentForm(forms.ModelForm):
             'notes':        'Notas',
         }
         widgets = {
-            'date':      forms.DateInput(attrs={'type': 'date'}),
+            'date':      forms.DateInput(
+                            format='%d/%m/%Y',
+                            attrs={'placeholder': 'DD/MM/AAAA', 'class': 'date-dmy'}
+                        ),
             'amount':    forms.NumberInput(attrs={'min': '1', 'step': '1', 'placeholder': '0'}),
             'reference': forms.TextInput(attrs={'placeholder': 'Nro. de transferencia, voucher...'}),
             'notes':     forms.TextInput(attrs={'placeholder': 'Notas adicionales'}),
@@ -105,6 +112,7 @@ class PaymentForm(forms.ModelForm):
         self.sale = sale
         self.fields['reference'].required = False
         self.fields['notes'].required = False
+        self.fields['date'].input_formats = ['%d/%m/%Y', '%Y-%m-%d']
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')

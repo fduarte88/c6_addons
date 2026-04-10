@@ -796,6 +796,8 @@ body {
     color: var(--sea-slate);
 }
 
+.date-dmy { font-variant-numeric: tabular-nums; letter-spacing: .03em; }
+
 .form-group input,
 .form-group select {
     padding: .65rem .875rem;
