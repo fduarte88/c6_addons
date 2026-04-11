@@ -197,10 +197,10 @@ function gsRaw(input) {
     return parseInt(input.value.replace(/\D/g, ''), 10) || 0;
 }
 document.querySelectorAll('.gs-input').forEach(function(input) {
-    // Formatear valor inicial (modo edición)
+    // Formatear valor inicial (modo edición) — parsear float para ignorar decimales
     if (input.value) {
-        const raw = input.value.replace(/\D/g, '');
-        if (raw) input.value = gsFormat(raw);
+        const num = Math.round(parseFloat(input.value));
+        if (!isNaN(num)) input.value = gsFormat(String(num));
     }
     input.addEventListener('input', function() {
         const pos    = this.selectionStart;
