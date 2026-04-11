@@ -131,6 +131,24 @@
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                 </div>
                 {% endwith %}
+
+                {% with field=form.cost_usd %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }} <span class="currency-hint">USD</span>
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.cotizacion %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
             </div>
 
             <!-- Indicador de margen en tiempo real -->
@@ -169,6 +187,33 @@
 
 {% block extra_js %}
 <script>
+// ── Máscara Guaraní (puntos de miles, sin decimales) ──────────────────────
+function gsFormat(val) {
+    const num = parseInt(val.replace(/\D/g, ''), 10);
+    if (isNaN(num)) return '';
+    return num.toLocaleString('de-DE'); // usa punto como separador de miles
+}
+function gsRaw(input) {
+    return parseInt(input.value.replace(/\D/g, ''), 10) || 0;
+}
+document.querySelectorAll('.gs-input').forEach(function(input) {
+    // Formatear valor inicial (modo edición)
+    if (input.value) {
+        const raw = input.value.replace(/\D/g, '');
+        if (raw) input.value = gsFormat(raw);
+    }
+    input.addEventListener('input', function() {
+        const pos    = this.selectionStart;
+        const before = this.value.length;
+        this.value   = gsFormat(this.value);
+        const after  = this.value.length;
+        this.setSelectionRange(pos + (after - before), pos + (after - before));
+    });
+    input.addEventListener('blur', function() {
+        this.value = gsFormat(this.value);
+    });
+});
+
 // Mapa de tipos de categoría inyectado desde Django
 const CATEGORY_TYPES = {{ category_types|safe }};
 
@@ -206,8 +251,8 @@ function updateSizeFields() {
 }
 
 function updateMargin() {
-    const cost  = parseFloat(costInput.value);
-    const price = parseFloat(priceInput.value);
+    const cost  = gsRaw(costInput);
+    const price = gsRaw(priceInput);
     if (cost > 0 && price > 0) {
         const pct = ((price - cost) / cost * 100).toFixed(1);
         marginValue.textContent = pct + '%';

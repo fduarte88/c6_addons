@@ -24,6 +24,7 @@ class ProductForm(forms.ModelForm):
         fields = [
             'description', 'origin', 'category',
             'quantity', 'cost', 'list_price', 'distributor_price',
+            'cost_usd', 'cotizacion',
             'calce', 'talle', 'is_active',
         ]
         labels = {
@@ -34,6 +35,8 @@ class ProductForm(forms.ModelForm):
             'cost':              'Costo',
             'list_price':        'Precio de lista',
             'distributor_price': 'Precio distribuidor',
+            'cost_usd':          'Costo USD',
+            'cotizacion':        'Cotización (1 USD = Gs.)',
             'calce':             'Calce',
             'talle':             'Talle',
             'is_active':         'Producto activo',
@@ -42,9 +45,11 @@ class ProductForm(forms.ModelForm):
             'description':       forms.TextInput(attrs={'placeholder': 'Descripción del producto'}),
             'origin':            forms.TextInput(attrs={'placeholder': 'Ej: China, Argentina, Brasil'}),
             'quantity':          forms.NumberInput(attrs={'min': '0', 'placeholder': '0'}),
-            'cost':              forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
-            'list_price':        forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
-            'distributor_price': forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
+            'cost':              forms.TextInput(attrs={'class': 'gs-input', 'placeholder': '0', 'autocomplete': 'off'}),
+            'list_price':        forms.TextInput(attrs={'class': 'gs-input', 'placeholder': '0', 'autocomplete': 'off'}),
+            'distributor_price': forms.TextInput(attrs={'class': 'gs-input', 'placeholder': '0', 'autocomplete': 'off'}),
+            'cost_usd':          forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
+            'cotizacion':        forms.NumberInput(attrs={'min': '0', 'step': '1', 'placeholder': 'Ej: 7800'}),
             'calce':             forms.Select(),
             'talle':             forms.Select(),
         }
@@ -55,11 +60,30 @@ class ProductForm(forms.ModelForm):
         self.fields['category'].queryset = Category.objects.filter(is_active=True)
         self.fields['category'].empty_label = 'Selecciona una categoría'
         # Campos condicionales: no son requeridos en el form (la validación es manual)
-        self.fields['calce'].required = False
-        self.fields['talle'].required = False
+        self.fields['calce'].required     = False
+        self.fields['talle'].required     = False
+        self.fields['cost_usd'].required  = False
+        self.fields['cotizacion'].required = False
         # Agregar opción vacía a selects condicionales
         self.fields['calce'].choices  = [('', 'Selecciona calce')] + list(Product.CALCE_CHOICES)
         self.fields['talle'].choices  = [('', 'Selecciona talle')] + list(Product.TALLE_CHOICES)
+
+    def _clean_gs_field(self, field_name):
+        """Elimina puntos de miles del valor formateado como Gs. antes de validar."""
+        value = self.data.get(field_name, '').replace('.', '').replace(',', '').strip()
+        try:
+            return int(value) if value else None
+        except ValueError:
+            raise forms.ValidationError('Ingresa un número válido.')
+
+    def clean_cost(self):
+        return self._clean_gs_field('cost')
+
+    def clean_list_price(self):
+        return self._clean_gs_field('list_price')
+
+    def clean_distributor_price(self):
+        return self._clean_gs_field('distributor_price')
 
     def clean(self):
         cleaned = super().clean()

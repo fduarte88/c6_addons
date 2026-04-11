@@ -61,6 +61,8 @@ class Product(models.Model):
     cost               = models.DecimalField('Costo', max_digits=12, decimal_places=2)
     list_price         = models.DecimalField('Precio de lista', max_digits=12, decimal_places=2)
     distributor_price  = models.DecimalField('Precio distribuidor', max_digits=12, decimal_places=2)
+    cost_usd           = models.DecimalField('Costo USD', max_digits=10, decimal_places=2, null=True, blank=True)
+    cotizacion         = models.DecimalField('Cotización (USD→Gs.)', max_digits=10, decimal_places=2, null=True, blank=True)
     category           = models.ForeignKey(
                             Category, on_delete=models.PROTECT,
                             verbose_name='Categoría', related_name='products'
