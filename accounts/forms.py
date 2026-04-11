@@ -73,6 +73,16 @@ class UserEditForm(forms.ModelForm):
         label='Usuario activo',
         required=False,
     )
+    new_password1 = forms.CharField(
+        label='Nueva contraseña',
+        required=False,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Dejar vacío para no cambiar'}),
+    )
+    new_password2 = forms.CharField(
+        label='Confirmar nueva contraseña',
+        required=False,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Repite la nueva contraseña'}),
+    )
 
     class Meta:
         model  = User
@@ -90,9 +100,22 @@ class UserEditForm(forms.ModelForm):
             self.fields['role'].initial  = self.instance.profile.role
             self.fields['phone'].initial = self.instance.profile.phone
 
+    def clean_new_password2(self):
+        p1 = self.cleaned_data.get('new_password1')
+        p2 = self.cleaned_data.get('new_password2')
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError('Las contraseñas no coinciden.')
+        if p1 and len(p1) < 8:
+            raise forms.ValidationError('La contraseña debe tener al menos 8 caracteres.')
+        return p2
+
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
+            new_pw = self.cleaned_data.get('new_password1')
+            if new_pw:
+                user.set_password(new_pw)
+                user.save()
             profile = user.profile
             profile.role  = self.cleaned_data['role']
             profile.phone = self.cleaned_data.get('phone', '')

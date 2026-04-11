@@ -53,6 +53,24 @@
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                 </div>
                 {% endwith %}
+
+                {% else %}
+                {% with field=form.new_password1 %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    <span class="field-hint">Dejá vacío para mantener la contraseña actual.</span>
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.new_password2 %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
                 {% endif %}
             </div>
         </div>
