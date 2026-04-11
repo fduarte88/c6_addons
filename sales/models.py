@@ -84,7 +84,29 @@ class SaleItem(models.Model):
         # Si no se especificó precio, usa el precio de lista del producto
         if not self.unit_price:
             self.unit_price = self.product.list_price
+
+        # Descuenta stock solo al crear (no al editar)
+        is_new = self.pk is None
+        if is_new:
+            old_qty = 0
+        else:
+            old_qty = SaleItem.objects.get(pk=self.pk).quantity
+
         super().save(*args, **kwargs)
+
+        # Ajusta el stock según la diferencia de cantidad
+        diff = self.quantity - old_qty
+        if diff != 0:
+            product = self.product
+            product.quantity = max(0, product.quantity - diff)
+            product.save(update_fields=['quantity'])
+
+    def delete(self, *args, **kwargs):
+        # Devuelve el stock al eliminar el ítem
+        product = self.product
+        product.quantity += self.quantity
+        product.save(update_fields=['quantity'])
+        super().delete(*args, **kwargs)
 
 
 class Payment(models.Model):

@@ -107,6 +107,11 @@ def sale_detail(request, pk):
 def sale_cancel(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
     if request.method == 'POST':
+        if sale.status != Sale.STATUS_CANCELLED:
+            # Devuelve stock de cada ítem
+            for item in sale.items.select_related('product').all():
+                item.product.quantity += item.quantity
+                item.product.save(update_fields=['quantity'])
         sale.status = Sale.STATUS_CANCELLED
         sale.save(update_fields=['status'])
         messages.success(request, f'Venta #{sale.pk} cancelada.')
