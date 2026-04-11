@@ -135,7 +135,7 @@
 
             <!-- Indicador de margen en tiempo real -->
             <div class="margin-indicator" id="margin-box" style="display:none;">
-                <span class="margin-label">Margen sobre costo:</span>
+                <span class="margin-label">Margen (Dist. vs Costo):</span>
                 <span class="margin-value" id="margin-value">—</span>
             </div>
         </div>
@@ -178,7 +178,7 @@ const fieldTalle  = document.getElementById('field-talle');
 const noSizeMsg   = document.getElementById('no-size-msg');
 const sizeTitle   = document.getElementById('size-title');
 const costInput   = document.getElementById('id_cost');
-const priceInput  = document.getElementById('id_list_price');
+const priceInput  = document.getElementById('id_distributor_price');
 const marginBox   = document.getElementById('margin-box');
 const marginValue = document.getElementById('margin-value');
 
@@ -219,7 +219,7 @@ function updateMargin() {
 }
 
 catSelect.addEventListener('change', updateSizeFields);
-costInput.addEventListener('input', updateMargin);
+costInput.addEventListener('input',  updateMargin);
 priceInput.addEventListener('input', updateMargin);
 
 // Inicializar al cargar (modo edición)
