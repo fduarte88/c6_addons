@@ -38,19 +38,21 @@ class Product(models.Model):
     # Calce EU (europeo / latinoamericano)
     CALCE_CHOICES = [(str(n), str(n)) for n in range(30, 50)]
 
-    # Calce US (americano): 1 – 15 con medios
-    CALCE_US_CHOICES = (
-        [(f'{n}', f'{n}') for n in range(1, 16)] +
-        [(f'{n}.5', f'{n}.5') for n in range(1, 15)]
-    )
-    CALCE_US_CHOICES = sorted(CALCE_US_CHOICES, key=lambda x: float(x[0]))
+    # Calce US (americano): 5 – 14 de 0.5 en 0.5
+    CALCE_US_CHOICES = []
+    _n = 50  # trabajamos en enteros x10 para evitar float impreciso
+    while _n <= 140:
+        val = f'{_n // 10}' if _n % 10 == 0 else f'{_n // 10}.5'
+        CALCE_US_CHOICES.append((val, f'US {val}'))
+        _n += 5
 
-    # Calce UK (británico): 1 – 14 con medios
-    CALCE_UK_CHOICES = (
-        [(f'{n}', f'{n}') for n in range(1, 15)] +
-        [(f'{n}.5', f'{n}.5') for n in range(1, 14)]
-    )
-    CALCE_UK_CHOICES = sorted(CALCE_UK_CHOICES, key=lambda x: float(x[0]))
+    # Calce UK (británico): 5 – 13 de 0.5 en 0.5
+    CALCE_UK_CHOICES = []
+    _n = 50
+    while _n <= 130:
+        val = f'{_n // 10}' if _n % 10 == 0 else f'{_n // 10}.5'
+        CALCE_UK_CHOICES.append((val, f'UK {val}'))
+        _n += 5
 
     # Opciones de talle (ropa)
     TALLE_XS  = 'XS'
@@ -92,8 +94,10 @@ class Product(models.Model):
                                           choices=CALCE_CHOICES,
                                           help_text='Talla europea/latinoamericana')
     calce_us           = models.CharField('Calce US', max_length=5, blank=True,
+                                          choices=CALCE_US_CHOICES,
                                           help_text='Talla americana')
     calce_uk           = models.CharField('Calce UK', max_length=5, blank=True,
+                                          choices=CALCE_UK_CHOICES,
                                           help_text='Talla británica')
     talle              = models.CharField('Talle', max_length=5, blank=True,
                                           choices=TALLE_CHOICES,

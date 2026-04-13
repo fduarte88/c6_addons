@@ -82,10 +82,10 @@ class ProductForm(forms.ModelForm):
         self.fields['supplier'].required    = False
         self.fields['supplier'].queryset    = Supplier.objects.filter(is_active=True).order_by('name')
         self.fields['supplier'].empty_label = 'Sin proveedor asignado'
-        self.fields['calce'].choices    = [('', '— EU —')] + list(Product.CALCE_CHOICES)
-        self.fields['calce_us'].choices = [('', '— US —')] + list(Product.CALCE_US_CHOICES)
-        self.fields['calce_uk'].choices = [('', '— UK —')] + list(Product.CALCE_UK_CHOICES)
-        self.fields['talle'].choices    = [('', 'Selecciona talle')] + list(Product.TALLE_CHOICES)
+        self.fields['calce'].choices    = [('', '— EU —')]    + list(Product.CALCE_CHOICES)
+        self.fields['calce_us'].choices = [('', '— US —')]    + list(Product.CALCE_US_CHOICES)
+        self.fields['calce_uk'].choices = [('', '— UK —')]    + list(Product.CALCE_UK_CHOICES)
+        self.fields['talle'].choices    = [('', '— Talle —')] + list(Product.TALLE_CHOICES)
         # Rellenar valor inicial formateado en modo edición
         for fname in ('cost', 'list_price', 'distributor_price'):
             val = getattr(self.instance, fname, None)
