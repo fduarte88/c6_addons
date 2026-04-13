@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q, Sum
+from django.http import JsonResponse
 from customers.models import Customer
 from products.models import Product
 from .models import Sale, SaleItem, Payment
@@ -194,3 +195,44 @@ def customer_statement(request, customer_pk):
         'total_saldo':  total_saldo,
     }
     return render(request, 'sales/statement.html', context)
+
+
+# ──────────────────────────────────────────
+# API — Búsqueda de clientes (AJAX)
+# ──────────────────────────────────────────
+
+@login_required
+def customer_lookup_api(request, pk):
+    """Devuelve datos de un cliente por su ID (código)."""
+    try:
+        c = Customer.objects.get(pk=pk, is_active=True)
+        return JsonResponse({
+            'id':       c.pk,
+            'code':     c.pk,
+            'name':     c.full_name,
+            'doc':      c.doc_number,
+            'phone':    c.phone_display,
+        })
+    except Customer.DoesNotExist:
+        return JsonResponse({'error': 'Cliente no encontrado'}, status=404)
+
+
+@login_required
+def customer_search_api(request):
+    """Busca clientes activos por nombre, apellido o documento."""
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'results': []})
+    customers = Customer.objects.filter(
+        is_active=True
+    ).filter(
+        Q(first_name__icontains=q) |
+        Q(last_name__icontains=q)  |
+        Q(doc_number__icontains=q) |
+        Q(pk__icontains=q)
+    ).order_by('last_name', 'first_name')[:20]
+    results = [
+        {'id': c.pk, 'code': c.pk, 'name': c.full_name, 'doc': c.doc_number}
+        for c in customers
+    ]
+    return JsonResponse({'results': results})

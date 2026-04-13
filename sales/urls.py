@@ -14,4 +14,8 @@ urlpatterns = [
 
     # Estado de cuenta
     path('cliente/<int:customer_pk>/estado-cuenta/', views.customer_statement, name='customer_statement'),
+
+    # API búsqueda de cliente
+    path('api/cliente/',      views.customer_search_api, name='customer_search_api'),
+    path('api/cliente/<int:pk>/', views.customer_lookup_api, name='customer_lookup_api'),
 ]
