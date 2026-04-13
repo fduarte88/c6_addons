@@ -69,13 +69,27 @@
             <h3 class="form-section-title" id="size-title">Talla</h3>
             <div class="form-grid form-grid--2">
 
-                <div class="form-group {% if form.calce.errors %}has-error{% endif %}" id="field-calce" style="display:none;">
-                    <label class="form-label" for="{{ form.calce.id_for_label }}">
-                        {{ form.calce.label }}
-                        <span class="required-badge">requerido</span>
-                    </label>
-                    {{ form.calce }}
-                    {% if form.calce.errors %}<span class="field-error">{{ form.calce.errors.0 }}</span>{% endif %}
+                <!-- Calce EU + US + UK (solo Calzado) -->
+                <div id="field-calce" style="display:none;" class="form-group--full">
+                    <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:.75rem;">
+                        <div class="form-group {% if form.calce.errors %}has-error{% endif %}">
+                            <label class="form-label" for="{{ form.calce.id_for_label }}">
+                                {{ form.calce.label }} <span class="required-badge">requerido</span>
+                            </label>
+                            {{ form.calce }}
+                            {% if form.calce.errors %}<span class="field-error">{{ form.calce.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group {% if form.calce_us.errors %}has-error{% endif %}">
+                            <label class="form-label" for="{{ form.calce_us.id_for_label }}">{{ form.calce_us.label }}</label>
+                            {{ form.calce_us }}
+                            {% if form.calce_us.errors %}<span class="field-error">{{ form.calce_us.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group {% if form.calce_uk.errors %}has-error{% endif %}">
+                            <label class="form-label" for="{{ form.calce_uk.id_for_label }}">{{ form.calce_uk.label }}</label>
+                            {{ form.calce_uk }}
+                            {% if form.calce_uk.errors %}<span class="field-error">{{ form.calce_uk.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group {% if form.talle.errors %}has-error{% endif %}" id="field-talle" style="display:none;">

@@ -35,8 +35,22 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    # Opciones de calce (tallas de calzado europeas/latinoamericanas)
+    # Calce EU (europeo / latinoamericano)
     CALCE_CHOICES = [(str(n), str(n)) for n in range(30, 50)]
+
+    # Calce US (americano): 1 – 15 con medios
+    CALCE_US_CHOICES = (
+        [(f'{n}', f'{n}') for n in range(1, 16)] +
+        [(f'{n}.5', f'{n}.5') for n in range(1, 15)]
+    )
+    CALCE_US_CHOICES = sorted(CALCE_US_CHOICES, key=lambda x: float(x[0]))
+
+    # Calce UK (británico): 1 – 14 con medios
+    CALCE_UK_CHOICES = (
+        [(f'{n}', f'{n}') for n in range(1, 15)] +
+        [(f'{n}.5', f'{n}.5') for n in range(1, 14)]
+    )
+    CALCE_UK_CHOICES = sorted(CALCE_UK_CHOICES, key=lambda x: float(x[0]))
 
     # Opciones de talle (ropa)
     TALLE_XS  = 'XS'
@@ -74,9 +88,13 @@ class Product(models.Model):
                             verbose_name='Categoría', related_name='products'
                          )
     # Campos condicionales
-    calce              = models.CharField('Calce', max_length=5, blank=True,
+    calce              = models.CharField('Calce EU', max_length=5, blank=True,
                                           choices=CALCE_CHOICES,
-                                          help_text='Solo para categoría Calzado')
+                                          help_text='Talla europea/latinoamericana')
+    calce_us           = models.CharField('Calce US', max_length=5, blank=True,
+                                          help_text='Talla americana')
+    calce_uk           = models.CharField('Calce UK', max_length=5, blank=True,
+                                          help_text='Talla británica')
     talle              = models.CharField('Talle', max_length=5, blank=True,
                                           choices=TALLE_CHOICES,
                                           help_text='Solo para categoría Vestimenta')
@@ -101,8 +119,12 @@ class Product(models.Model):
 
     @property
     def size_display(self):
-        if self.calce:
-            return f'Calce {self.calce}'
+        if self.calce or self.calce_us or self.calce_uk:
+            parts = []
+            if self.calce:    parts.append(f'EU {self.calce}')
+            if self.calce_us: parts.append(f'US {self.calce_us}')
+            if self.calce_uk: parts.append(f'UK {self.calce_uk}')
+            return ' / '.join(parts)
         if self.talle:
             return f'Talle {self.talle}'
         return '—'

@@ -41,7 +41,7 @@ class ProductForm(forms.ModelForm):
             'description', 'origin', 'category', 'supplier',
             'quantity', 'cost', 'list_price', 'distributor_price',
             'cost_usd', 'cotizacion',
-            'calce', 'talle', 'is_active',
+            'calce', 'calce_us', 'calce_uk', 'talle', 'is_active',
         ]
         labels = {
             'description':       'Descripción',
@@ -51,7 +51,9 @@ class ProductForm(forms.ModelForm):
             'quantity':          'Cantidad en stock',
             'cost_usd':          'Costo USD',
             'cotizacion':        'Cotización (1 USD = Gs.)',
-            'calce':             'Calce',
+            'calce':             'Calce EU',
+            'calce_us':          'Calce US',
+            'calce_uk':          'Calce UK',
             'talle':             'Talle',
             'is_active':         'Producto activo',
         }
@@ -61,8 +63,10 @@ class ProductForm(forms.ModelForm):
             'quantity':    forms.NumberInput(attrs={'readonly': True, 'tabindex': '-1', 'class': 'field-readonly'}),
             'cost_usd':    forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0,00'}),
             'cotizacion':  forms.NumberInput(attrs={'min': '0', 'step': '1',    'placeholder': 'Ej: 7.800'}),
-            'calce':       forms.Select(),
-            'talle':       forms.Select(),
+            'calce':    forms.Select(),
+            'calce_us': forms.Select(),
+            'calce_uk': forms.Select(),
+            'talle':    forms.Select(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -70,14 +74,18 @@ class ProductForm(forms.ModelForm):
         self.fields['category'].queryset   = Category.objects.filter(is_active=True)
         self.fields['category'].empty_label = 'Selecciona una categoría'
         self.fields['calce'].required       = False
+        self.fields['calce_us'].required    = False
+        self.fields['calce_uk'].required    = False
         self.fields['talle'].required       = False
         self.fields['cost_usd'].required    = False
         self.fields['cotizacion'].required  = False
         self.fields['supplier'].required    = False
         self.fields['supplier'].queryset    = Supplier.objects.filter(is_active=True).order_by('name')
         self.fields['supplier'].empty_label = 'Sin proveedor asignado'
-        self.fields['calce'].choices  = [('', 'Selecciona calce')] + list(Product.CALCE_CHOICES)
-        self.fields['talle'].choices  = [('', 'Selecciona talle')] + list(Product.TALLE_CHOICES)
+        self.fields['calce'].choices    = [('', '— EU —')] + list(Product.CALCE_CHOICES)
+        self.fields['calce_us'].choices = [('', '— US —')] + list(Product.CALCE_US_CHOICES)
+        self.fields['calce_uk'].choices = [('', '— UK —')] + list(Product.CALCE_UK_CHOICES)
+        self.fields['talle'].choices    = [('', 'Selecciona talle')] + list(Product.TALLE_CHOICES)
         # Rellenar valor inicial formateado en modo edición
         for fname in ('cost', 'list_price', 'distributor_price'):
             val = getattr(self.instance, fname, None)
@@ -121,9 +129,11 @@ class ProductForm(forms.ModelForm):
                 self.add_error('calce', 'El calce es obligatorio para la categoría Calzado.')
             if category.is_vestimenta and not talle:
                 self.add_error('talle', 'El talle es obligatorio para la categoría Vestimenta.')
-            # Limpiar campo que no corresponde
+            # Limpiar campos que no corresponden
             if not category.is_calzado:
-                cleaned['calce'] = ''
+                cleaned['calce']    = ''
+                cleaned['calce_us'] = ''
+                cleaned['calce_uk'] = ''
             if not category.is_vestimenta:
                 cleaned['talle'] = ''
 
