@@ -100,16 +100,55 @@
 
         <!-- Stock y precios -->
         <div class="form-section">
-            <h3 class="form-section-title">Stock y Precios</h3>
-            <div class="form-grid">
+            <h3 class="form-section-title">Stock</h3>
+            <div class="form-grid form-grid--2">
                 {% with field=form.quantity %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    <div style="display:flex;align-items:center;gap:.6rem;">
+                        {{ field }}
+                        <span class="field-hint" style="white-space:nowrap;">Solo se modifica via Compras / Ventas</span>
+                    </div>
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">Precios</h3>
+
+            <!-- Toggle USD -->
+            <div class="usd-toggle-bar">
+                <label class="usd-toggle-label">
+                    <input type="checkbox" id="use-usd" {% if form.instance.cost_usd %}checked{% endif %}>
+                    <span class="toggle-slider-sm"></span>
+                    Precio en Dólar (USD)
+                </label>
+                <span class="field-hint">Activa para ingresar costo en USD y calcular Gs. automáticamente</span>
+            </div>
+
+            <!-- Campos USD (visibles solo si toggle activo) -->
+            <div class="form-grid usd-fields" id="usd-fields" style="display:none;">
+                {% with field=form.cost_usd %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }} <span class="currency-hint">USD</span>
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
+                {% with field=form.cotizacion %}
                 <div class="form-group {% if field.errors %}has-error{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                 </div>
                 {% endwith %}
+            </div>
 
+            <div class="form-grid">
                 {% with field=form.cost %}
                 <div class="form-group {% if field.errors %}has-error{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
@@ -135,24 +174,6 @@
                     <label class="form-label" for="{{ field.id_for_label }}">
                         {{ field.label }} <span class="currency-hint">Gs.</span>
                     </label>
-                    {{ field }}
-                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
-                </div>
-                {% endwith %}
-
-                {% with field=form.cost_usd %}
-                <div class="form-group {% if field.errors %}has-error{% endif %}">
-                    <label class="form-label" for="{{ field.id_for_label }}">
-                        {{ field.label }} <span class="currency-hint">USD</span>
-                    </label>
-                    {{ field }}
-                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
-                </div>
-                {% endwith %}
-
-                {% with field=form.cotizacion %}
-                <div class="form-group {% if field.errors %}has-error{% endif %}">
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                 </div>
@@ -195,6 +216,42 @@
 
 {% block extra_js %}
 <script>
+// ── Toggle USD ────────────────────────────────────────────────────────────
+(function () {
+    const toggle     = document.getElementById('use-usd');
+    const usdFields  = document.getElementById('usd-fields');
+    const usdInput   = document.getElementById('id_cost_usd');
+    const cotInput   = document.getElementById('id_cotizacion');
+    const costInput_ = document.getElementById('id_cost');
+
+    function applyToggle() {
+        const on = toggle.checked;
+        usdFields.style.display = on ? '' : 'none';
+        if (usdInput)  usdInput.disabled  = !on;
+        if (cotInput)  cotInput.disabled  = !on;
+        if (!on) {
+            if (usdInput) usdInput.value = '';
+            if (cotInput) cotInput.value = '';
+        }
+    }
+
+    function calcCostGs() {
+        if (!toggle.checked) return;
+        const usd = parseFloat(usdInput?.value || 0);
+        const cot = parseFloat(cotInput?.value || 0);
+        if (usd > 0 && cot > 0 && costInput_) {
+            const gs = Math.round(usd * cot);
+            costInput_.value = gs.toLocaleString('de-DE');
+            updateMargin && updateMargin();
+        }
+    }
+
+    toggle.addEventListener('change', applyToggle);
+    if (usdInput) usdInput.addEventListener('input', calcCostGs);
+    if (cotInput) cotInput.addEventListener('input', calcCostGs);
+    applyToggle();
+})();
+
 // ── Máscara Guaraní (puntos de miles, sin decimales) ──────────────────────
 function gsFormat(val) {
     const num = parseInt(val.replace(/\D/g, ''), 10);

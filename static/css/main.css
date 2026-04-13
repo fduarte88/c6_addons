@@ -625,6 +625,43 @@ body {
 }
 .btn-ghost:hover { background: var(--surface-dark); color: var(--sea-navy); }
 
+/* ── Field readonly ── */
+.field-readonly {
+    background: var(--surface-dark) !important;
+    color: var(--text-muted) !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+/* ── USD toggle ── */
+.usd-toggle-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .65rem 1rem;
+    background: var(--surface-dark);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+.usd-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    font-weight: 600;
+    font-size: .875rem;
+    color: var(--sea-navy);
+    cursor: pointer;
+    user-select: none;
+}
+.usd-toggle-label input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--sea-steel);
+    cursor: pointer;
+}
+
 /* Phone input group */
 .phone-field-wrapper {
     display: flex;

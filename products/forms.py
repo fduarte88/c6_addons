@@ -58,7 +58,7 @@ class ProductForm(forms.ModelForm):
         widgets = {
             'description': forms.TextInput(attrs={'placeholder': 'Descripción del producto'}),
             'origin':      forms.TextInput(attrs={'placeholder': 'Ej: China, Argentina, Brasil'}),
-            'quantity':    forms.NumberInput(attrs={'min': '0', 'placeholder': '0'}),
+            'quantity':    forms.NumberInput(attrs={'readonly': True, 'tabindex': '-1', 'class': 'field-readonly'}),
             'cost_usd':    forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0,00'}),
             'cotizacion':  forms.NumberInput(attrs={'min': '0', 'step': '1',    'placeholder': 'Ej: 7.800'}),
             'calce':       forms.Select(),
@@ -83,6 +83,12 @@ class ProductForm(forms.ModelForm):
             val = getattr(self.instance, fname, None)
             if val is not None:
                 self.initial[fname] = str(int(round(float(val))))
+
+    def clean_quantity(self):
+        # Stock bloqueado: siempre conserva el valor almacenado
+        if self.instance and self.instance.pk:
+            return self.instance.quantity
+        return 0  # nuevo producto siempre arranca en 0
 
     def _parse_gs(self, field_name):
         """Quita puntos de miles, retorna int listo para guardar en DecimalField."""
