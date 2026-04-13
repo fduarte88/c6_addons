@@ -1,0 +1,215 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Nueva Compra — c6 Store{% endblock %}
+{% block header_title %}Nueva Compra{% endblock %}
+{% block nav_purchases %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Registrar Compra</h1>
+        <p class="page-subtitle">Selecciona los productos comprados para actualizar el stock</p>
+    </div>
+    <a href="{% url 'purchase_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+    </a>
+</div>
+
+<form method="post" novalidate id="purchase-form">
+{% csrf_token %}
+
+<!-- Datos de la compra -->
+<div class="form-card" style="margin-bottom:1.25rem;">
+    <div class="form-section">
+        <h3 class="form-section-title">Datos de la compra</h3>
+        <div class="form-grid">
+            {% with field=form.date %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+            </div>
+            {% endwith %}
+            {% with field=form.supplier %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+            </div>
+            {% endwith %}
+            {% with field=form.notes %}
+            <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<!-- Items de la compra -->
+<div class="form-card" style="margin-bottom:1.25rem;">
+    <div class="form-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <h3 class="form-section-title" style="margin-bottom:0;">Productos comprados</h3>
+            <button type="button" class="btn btn-secondary" onclick="addItemRow()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Agregar producto
+            </button>
+        </div>
+
+        {{ formset.management_form }}
+
+        {% if formset.non_form_errors %}
+        <div class="alert alert-error">{{ formset.non_form_errors }}</div>
+        {% endif %}
+
+        <div class="items-table-wrap">
+            <table class="items-table" id="items-table">
+                <thead>
+                    <tr>
+                        <th style="width:40%">Producto</th>
+                        <th style="width:12%">Cant.</th>
+                        <th style="width:22%">Costo unit. (Gs.)</th>
+                        <th style="width:18%">Subtotal</th>
+                        <th style="width:8%"></th>
+                    </tr>
+                </thead>
+                <tbody id="items-body">
+                    {% for item_form in formset %}
+                    <tr class="item-row" id="item-row-{{ forloop.counter0 }}">
+                        <td>
+                            {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {{ item_form.product }}
+                            {% if item_form.product.errors %}<span class="field-error">{{ item_form.product.errors.0 }}</span>{% endif %}
+                        </td>
+                        <td>
+                            {{ item_form.quantity }}
+                            {% if item_form.quantity.errors %}<span class="field-error">{{ item_form.quantity.errors.0 }}</span>{% endif %}
+                        </td>
+                        <td>
+                            {{ item_form.unit_cost }}
+                            {% if item_form.unit_cost.errors %}<span class="field-error">{{ item_form.unit_cost.errors.0 }}</span>{% endif %}
+                        </td>
+                        <td class="item-subtotal">Gs. 0</td>
+                        <td>
+                            {% if not forloop.first %}
+                            <button type="button" class="btn-icon btn-icon--delete" onclick="removeRow(this)" title="Quitar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="items-total-row">
+                        <td colspan="3" style="text-align:right;font-weight:700;padding-right:1rem;">Total compra</td>
+                        <td id="purchase-total" class="col-price" style="font-weight:800;font-size:1.05rem;">Gs. 0</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="form-actions" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 2rem;">
+    <a href="{% url 'purchase_list' %}" class="btn btn-ghost">Cancelar</a>
+    <button type="submit" class="btn btn-primary">Registrar compra</button>
+</div>
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PRICES = {{ prices|safe }};
+const TOTAL_FORMS_INPUT = document.getElementById('id_items-TOTAL_FORMS');
+
+function fmtGs(n) {
+    const v = Math.round(Number(n) || 0);
+    return 'Gs. ' + v.toLocaleString('de-DE');
+}
+
+function recalcRow(row) {
+    const qty   = parseFloat(row.querySelector('.item-qty')?.value)   || 0;
+    const price = parseFloat(row.querySelector('.item-price')?.value) || 0;
+    const cell  = row.querySelector('.item-subtotal');
+    if (cell) cell.textContent = fmtGs(qty * price);
+    recalcTotal();
+}
+
+function recalcTotal() {
+    let total = 0;
+    document.querySelectorAll('.item-row').forEach(row => {
+        total += (parseFloat(row.querySelector('.item-qty')?.value) || 0) *
+                 (parseFloat(row.querySelector('.item-price')?.value) || 0);
+    });
+    document.getElementById('purchase-total').textContent = fmtGs(total);
+}
+
+function bindRow(row) {
+    const productSel = row.querySelector('.item-product');
+    const qtyInput   = row.querySelector('.item-qty');
+    const priceInput = row.querySelector('.item-price');
+
+    if (productSel) {
+        productSel.addEventListener('change', () => {
+            const pid = productSel.value;
+            if (pid && PRICES[pid] !== undefined && (!priceInput.value || priceInput.value === '0')) {
+                priceInput.value = Math.round(PRICES[pid]);
+            }
+            recalcRow(row);
+        });
+    }
+    if (qtyInput)   qtyInput.addEventListener('input',   () => recalcRow(row));
+    if (priceInput) priceInput.addEventListener('input', () => recalcRow(row));
+    recalcRow(row);
+}
+
+function addItemRow() {
+    const body  = document.getElementById('items-body');
+    const total = parseInt(TOTAL_FORMS_INPUT.value);
+    const clone = body.querySelector('.item-row').cloneNode(true);
+    clone.id    = `item-row-${total}`;
+
+    clone.querySelectorAll('[name],[id]').forEach(el => {
+        ['name','id'].forEach(attr => {
+            if (el.getAttribute(attr))
+                el.setAttribute(attr, el.getAttribute(attr).replace(/-\d+-/, `-${total}-`));
+        });
+        if (el.tagName === 'SELECT' || el.tagName === 'INPUT') el.value = '';
+    });
+
+    const lastTd = clone.querySelector('td:last-child');
+    lastTd.innerHTML = `
+        <button type="button" class="btn-icon btn-icon--delete" onclick="removeRow(this)" title="Quitar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>`;
+
+    clone.querySelector('.item-subtotal').textContent = 'Gs. 0';
+    body.appendChild(clone);
+    TOTAL_FORMS_INPUT.value = total + 1;
+    bindRow(clone);
+}
+
+function removeRow(btn) {
+    if (document.querySelectorAll('.item-row').length <= 1) return;
+    btn.closest('.item-row').remove();
+    recalcTotal();
+}
+
+document.querySelectorAll('.item-row').forEach(bindRow);
+</script>
+{% endblock %}

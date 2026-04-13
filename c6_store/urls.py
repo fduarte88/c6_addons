@@ -10,6 +10,7 @@ urlpatterns = [
     path('clientes/', include('customers.urls')),
     path('productos/', include('products.urls')),
     path('ventas/', include('sales.urls')),
+    path('compras/', include('purchases.urls')),
     path('accounts/', include('accounts.urls')),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),
 ]

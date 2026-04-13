@@ -1,0 +1,75 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Compra #{{ purchase.pk }} — c6 Store{% endblock %}
+{% block header_title %}Detalle de Compra{% endblock %}
+{% block nav_purchases %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Compra #{{ purchase.pk }}</h1>
+        <p class="page-subtitle">{{ purchase.date|date:"d/m/Y" }}{% if purchase.supplier %} — {{ purchase.supplier }}{% endif %}</p>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+        <a href="{% url 'purchase_delete' purchase.pk %}" class="btn btn-ghost" style="color:#c0392b;border-color:#c0392b;">Eliminar</a>
+        <a href="{% url 'purchase_list' %}" class="btn btn-ghost">Volver</a>
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-profile-card">
+        <div class="detail-avatar" style="font-size:1.5rem;">🛒</div>
+        <h2 class="detail-name">Compra #{{ purchase.pk }}</h2>
+        <div class="detail-dates">
+            <span>Fecha: {{ purchase.date|date:"d/m/Y" }}</span>
+            <span>Registrada: {{ purchase.created_at|date:"d/m/Y H:i" }}</span>
+        </div>
+        {% if purchase.supplier %}
+        <div class="detail-meta-item" style="margin-top:.75rem;">
+            <span class="doc-type-badge">Proveedor</span>
+            <span>{{ purchase.supplier }}</span>
+        </div>
+        {% endif %}
+        <div style="margin-top:1rem;font-size:1.1rem;font-weight:700;color:var(--sea-navy);">
+            Total: {{ purchase.total|gs }}
+        </div>
+    </div>
+
+    <div class="detail-data-card">
+        <div class="detail-section">
+            <h3 class="form-section-title">Productos comprados</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Costo unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in purchase.items.all %}
+                    <tr>
+                        <td>{{ item.product.description }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td class="col-price">{{ item.unit_cost|gs }}</td>
+                        <td class="col-price">{{ item.subtotal|gs }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="items-total-row">
+                        <td colspan="3" style="text-align:right;font-weight:700;padding-right:1rem;">Total</td>
+                        <td class="col-price" style="font-weight:800;">{{ purchase.total|gs }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% if purchase.notes %}
+        <div class="detail-section">
+            <h3 class="form-section-title">Observaciones</h3>
+            <p style="color:var(--text-secondary);margin:0;">{{ purchase.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

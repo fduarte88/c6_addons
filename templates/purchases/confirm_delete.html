@@ -1,0 +1,26 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Eliminar Compra — c6 Store{% endblock %}
+{% block header_title %}Eliminar Compra{% endblock %}
+{% block nav_purchases %}active{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width:520px;margin:2rem auto;">
+    <div style="text-align:center;padding:1rem 0 1.5rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px;margin-bottom:1rem;">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <h2 style="margin-bottom:.5rem;color:var(--sea-navy);">Eliminar Compra #{{ purchase.pk }}</h2>
+        <p style="color:var(--text-secondary);margin-bottom:0;">
+            Esta acción <strong>revertirá el stock</strong> de todos los productos incluidos en esta compra.<br>
+            ¿Estás seguro de que deseas continuar?
+        </p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions" style="justify-content:center;">
+            <a href="{% url 'purchase_list' %}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-danger">Sí, eliminar compra</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
