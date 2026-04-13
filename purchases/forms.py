@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from products.models import Product
+from suppliers.models import Supplier
 from .models import Purchase, PurchaseItem
 
 
@@ -14,19 +15,20 @@ class PurchaseForm(forms.ModelForm):
             'notes':    'Observaciones',
         }
         widgets = {
-            'date':     forms.DateInput(
-                            format='%d/%m/%Y',
-                            attrs={'placeholder': 'DD/MM/AAAA', 'class': 'date-dmy'}
-                        ),
-            'supplier': forms.TextInput(attrs={'placeholder': 'Nombre del proveedor (opcional)'}),
-            'notes':    forms.Textarea(attrs={'rows': 2, 'placeholder': 'Observaciones opcionales...'}),
+            'date':  forms.DateInput(
+                         format='%d/%m/%Y',
+                         attrs={'placeholder': 'DD/MM/AAAA', 'class': 'date-dmy'}
+                     ),
+            'notes': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Observaciones opcionales...'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['supplier'].required = False
-        self.fields['notes'].required    = False
-        self.fields['date'].input_formats = ['%d/%m/%Y', '%Y-%m-%d']
+        self.fields['supplier'].required    = False
+        self.fields['supplier'].queryset    = Supplier.objects.filter(is_active=True).order_by('name')
+        self.fields['supplier'].empty_label = 'Sin proveedor / seleccionar...'
+        self.fields['notes'].required       = False
+        self.fields['date'].input_formats   = ['%d/%m/%Y', '%Y-%m-%d']
 
 
 class PurchaseItemForm(forms.ModelForm):

@@ -16,7 +16,7 @@ def purchase_list(request):
 
     if query:
         purchases = purchases.filter(
-            Q(supplier__icontains=query) |
+            Q(supplier__name__icontains=query) |
             Q(pk__icontains=query)
         )
 

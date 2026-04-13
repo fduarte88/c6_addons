@@ -1,11 +1,16 @@
 from django.db import models
 from django.utils import timezone
 from products.models import Product
+from suppliers.models import Supplier
 
 
 class Purchase(models.Model):
     date       = models.DateField('Fecha de compra', default=timezone.now)
-    supplier   = models.CharField('Proveedor', max_length=200, blank=True)
+    supplier   = models.ForeignKey(
+                     Supplier, on_delete=models.SET_NULL,
+                     null=True, blank=True,
+                     verbose_name='Proveedor', related_name='purchases'
+                 )
     notes      = models.TextField('Observaciones', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
