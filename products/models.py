@@ -1,4 +1,5 @@
 from django.db import models
+from suppliers.models import Supplier
 
 
 class Category(models.Model):
@@ -56,7 +57,12 @@ class Product(models.Model):
     ]
 
     description        = models.CharField('Descripción', max_length=200)
-    origin             = models.CharField('Origen', max_length=100)
+    origin             = models.CharField('Procedencia', max_length=100)
+    supplier           = models.ForeignKey(
+                            Supplier, on_delete=models.SET_NULL,
+                            null=True, blank=True,
+                            verbose_name='Proveedor', related_name='products'
+                         )
     quantity           = models.PositiveIntegerField('Cantidad en stock', default=0)
     cost               = models.DecimalField('Costo', max_digits=12, decimal_places=2)
     list_price         = models.DecimalField('Precio de lista', max_digits=12, decimal_places=2)

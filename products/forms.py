@@ -1,4 +1,5 @@
 from django import forms
+from suppliers.models import Supplier
 from .models import Category, Product
 
 
@@ -37,15 +38,16 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model  = Product
         fields = [
-            'description', 'origin', 'category',
+            'description', 'origin', 'category', 'supplier',
             'quantity', 'cost', 'list_price', 'distributor_price',
             'cost_usd', 'cotizacion',
             'calce', 'talle', 'is_active',
         ]
         labels = {
             'description':       'Descripción',
-            'origin':            'Origen',
+            'origin':            'Procedencia',
             'category':          'Categoría',
+            'supplier':          'Proveedor',
             'quantity':          'Cantidad en stock',
             'cost_usd':          'Costo USD',
             'cotizacion':        'Cotización (1 USD = Gs.)',
@@ -67,10 +69,13 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset   = Category.objects.filter(is_active=True)
         self.fields['category'].empty_label = 'Selecciona una categoría'
-        self.fields['calce'].required      = False
-        self.fields['talle'].required      = False
-        self.fields['cost_usd'].required   = False
-        self.fields['cotizacion'].required = False
+        self.fields['calce'].required       = False
+        self.fields['talle'].required       = False
+        self.fields['cost_usd'].required    = False
+        self.fields['cotizacion'].required  = False
+        self.fields['supplier'].required    = False
+        self.fields['supplier'].queryset    = Supplier.objects.filter(is_active=True).order_by('name')
+        self.fields['supplier'].empty_label = 'Sin proveedor asignado'
         self.fields['calce'].choices  = [('', 'Selecciona calce')] + list(Product.CALCE_CHOICES)
         self.fields['talle'].choices  = [('', 'Selecciona talle')] + list(Product.TALLE_CHOICES)
         # Rellenar valor inicial formateado en modo edición
