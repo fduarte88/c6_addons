@@ -13,7 +13,8 @@ urlpatterns = [
     path('pago/<int:pk>/eliminar/',    views.payment_delete,     name='payment_delete'),
 
     # Estado de cuenta
-    path('cliente/<int:customer_pk>/estado-cuenta/', views.customer_statement, name='customer_statement'),
+    path('cliente/<int:customer_pk>/estado-cuenta/',     views.customer_statement,     name='customer_statement'),
+    path('cliente/<int:customer_pk>/estado-cuenta/pdf/', views.customer_statement_pdf, name='customer_statement_pdf'),
 
     # API búsqueda de cliente
     path('api/cliente/',      views.customer_search_api, name='customer_search_api'),
