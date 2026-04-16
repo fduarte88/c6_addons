@@ -325,7 +325,37 @@ document.querySelectorAll('.item-row').forEach(bindRow);
 
     document.getElementById('modal-close').addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    let activeIdx = -1;
+
+    function getItems() { return Array.from(modalRes.querySelectorAll('.modal-result-item')); }
+
+    function setActive(idx) {
+        const items = getItems();
+        items.forEach(el => el.classList.remove('modal-result-active'));
+        if (idx < 0) idx = items.length - 1;
+        if (idx >= items.length) idx = 0;
+        activeIdx = idx;
+        if (items[activeIdx]) {
+            items[activeIdx].classList.add('modal-result-active');
+            items[activeIdx].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeModal(); return; }
+        if (modal.style.display === 'none') return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIdx + 1); }
+        if (e.key === 'ArrowUp')   { e.preventDefault(); setActive(activeIdx - 1); }
+        if (e.key === 'Enter') {
+            const items = getItems();
+            if (activeIdx >= 0 && items[activeIdx]) {
+                e.preventDefault();
+                const el = items[activeIdx];
+                setCustomer(el.dataset.id, el.dataset.name);
+            }
+        }
+    });
 
     let searchTimer;
     modalInput.addEventListener('input', () => {
@@ -333,25 +363,31 @@ document.querySelectorAll('.item-row').forEach(bindRow);
         searchTimer = setTimeout(() => doSearch(modalInput.value.trim()), 250);
     });
 
-    function doSearch(q) {
-        if (!q) { modalRes.innerHTML = '<p class="modal-empty">Escribe para buscar...</p>'; return; }
-        fetch(SEARCH_URL + '?q=' + encodeURIComponent(q))
-            .then(r => r.json())
-            .then(d => {
-                if (!d.results.length) {
-                    modalRes.innerHTML = '<p class="modal-empty">Sin resultados.</p>';
-                    return;
-                }
-                modalRes.innerHTML = d.results.map(c => `
-                    <div class="modal-result-item" data-id="${c.id}" data-name="${c.name} [${c.doc}]">
-                        <span class="modal-result-code">#${c.code}</span>
-                        <span class="modal-result-name">${c.name}</span>
-                        <span class="modal-result-doc">${c.doc}</span>
-                    </div>`).join('');
-                modalRes.querySelectorAll('.modal-result-item').forEach(el => {
-                    el.addEventListener('click', () => setCustomer(el.dataset.id, el.dataset.name));
-                });
+    function renderResults(results) {
+        activeIdx = -1;
+        if (!results.length) {
+            modalRes.innerHTML = '<p class="modal-empty">Sin resultados.</p>';
+            return;
+        }
+        modalRes.innerHTML = results.map(c => `
+            <div class="modal-result-item" data-id="${c.id}" data-name="${c.name} [${c.doc}]">
+                <span class="modal-result-code">#${c.code}</span>
+                <span class="modal-result-name">${c.name}</span>
+                <span class="modal-result-doc">${c.doc}</span>
+            </div>`).join('');
+        modalRes.querySelectorAll('.modal-result-item').forEach(el => {
+            el.addEventListener('click', () => setCustomer(el.dataset.id, el.dataset.name));
+            el.addEventListener('mouseenter', () => {
+                getItems().forEach(i => i.classList.remove('modal-result-active'));
+                el.classList.add('modal-result-active');
+                activeIdx = getItems().indexOf(el);
             });
+        });
+    }
+
+    function doSearch(q) {
+        const url = q ? SEARCH_URL + '?q=' + encodeURIComponent(q) : SEARCH_URL + '?q=*';
+        fetch(url).then(r => r.json()).then(d => renderResults(d.results));
     }
 })();
 </script>

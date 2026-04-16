@@ -232,18 +232,18 @@ def customer_lookup_api(request, pk):
 
 @login_required
 def customer_search_api(request):
-    """Busca clientes activos por nombre, apellido o documento."""
+    """Busca clientes activos por nombre, apellido o documento. q='*' devuelve todos."""
     q = request.GET.get('q', '').strip()
-    if not q:
-        return JsonResponse({'results': []})
-    customers = Customer.objects.filter(
-        is_active=True
-    ).filter(
-        Q(first_name__icontains=q) |
-        Q(last_name__icontains=q)  |
-        Q(doc_number__icontains=q) |
-        Q(pk__icontains=q)
-    ).order_by('last_name', 'first_name')[:20]
+    base_qs = Customer.objects.filter(is_active=True).order_by('last_name', 'first_name')
+    if not q or q == '*':
+        customers = base_qs[:50]
+    else:
+        customers = base_qs.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q)  |
+            Q(doc_number__icontains=q) |
+            Q(pk__icontains=q)
+        )[:20]
     results = [
         {'id': c.pk, 'code': c.pk, 'name': c.full_name, 'doc': c.doc_number}
         for c in customers
@@ -289,9 +289,8 @@ def customer_statement_pdf(request, customer_pk):
     styles = getSampleStyleSheet()
 
     def style(name, **kw):
-        base = styles['Normal']
-        s = ParagraphStyle(name, parent=base, **kw)
-        return s
+        kw.setdefault('parent', styles['Normal'])
+        return ParagraphStyle(name, **kw)
 
     s_title    = style('Title',    fontSize=16, textColor=NAVY,  leading=20, spaceAfter=2)
     s_subtitle = style('Sub',      fontSize=9,  textColor=GREY,  leading=12)

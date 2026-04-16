@@ -782,7 +782,8 @@ body {
     cursor: pointer;
     transition: background .12s, border-color .12s;
 }
-.modal-result-item:hover { background: var(--surface-dark); border-color: var(--sea-steel); }
+.modal-result-item:hover,
+.modal-result-item.modal-result-active { background: var(--surface-dark); border-color: var(--sea-steel); }
 .modal-result-code  { font-weight: 700; color: var(--sea-steel); min-width: 2.5rem; font-size: .82rem; }
 .modal-result-name  { flex: 1; font-weight: 600; color: var(--sea-navy); }
 .modal-result-doc   { font-size: .8rem; color: var(--text-muted); }
