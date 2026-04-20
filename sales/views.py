@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Q, Sum, F, ExpressionWrapper, DecimalField as DField
+from django.db.models import Q, Sum
 from django.http import JsonResponse, HttpResponse
 from customers.models import Customer
 from products.models import Product
@@ -48,25 +48,19 @@ def sale_list(request):
     sales_cancelled = base_qs.filter(status=Sale.STATUS_CANCELLED).order_by('-date', '-pk')
 
     tab_sales = {'active': sales_active, 'paid': sales_paid, 'cancelled': sales_cancelled}
-    current_sales = tab_sales.get(active_tab, sales_active)
+    current_sales = list(tab_sales.get(active_tab, sales_active))
 
-    subtotal_expr = ExpressionWrapper(F('quantity') * F('unit_price'), output_field=DField(max_digits=14, decimal_places=2))
-    items_summary = (
-        SaleItem.objects
-        .filter(sale__in=current_sales)
-        .values('product__description')
-        .annotate(total_qty=Sum('quantity'), total_value=Sum(subtotal_expr))
-        .order_by('-total_value')
-    )
-
-    total_items_value = sum(r['total_value'] or 0 for r in items_summary)
+    tab_total        = sum(s.total      for s in current_sales)
+    tab_total_paid   = sum(s.total_paid for s in current_sales)
+    tab_total_saldo  = sum(s.balance    for s in current_sales)
 
     context = {
-        'sales_active':      sales_active,
-        'sales_paid':        sales_paid,
-        'sales_cancelled':   sales_cancelled,
-        'items_summary':     items_summary,
-        'total_items_value': total_items_value,
+        'sales_active':    sales_active,
+        'sales_paid':      sales_paid,
+        'sales_cancelled': sales_cancelled,
+        'tab_total':       tab_total,
+        'tab_total_paid':  tab_total_paid,
+        'tab_total_saldo': tab_total_saldo,
         'query':           query,
         'active_tab':      active_tab,
         'total_ventas':    Sale.objects.count(),
