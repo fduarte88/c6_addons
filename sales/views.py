@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, F, ExpressionWrapper, DecimalField as DField
 from django.http import JsonResponse, HttpResponse
 from customers.models import Customer
 from products.models import Product
@@ -47,10 +47,26 @@ def sale_list(request):
     sales_paid      = base_qs.filter(status=Sale.STATUS_PAID).order_by('-date', '-pk')
     sales_cancelled = base_qs.filter(status=Sale.STATUS_CANCELLED).order_by('-date', '-pk')
 
+    tab_sales = {'active': sales_active, 'paid': sales_paid, 'cancelled': sales_cancelled}
+    current_sales = tab_sales.get(active_tab, sales_active)
+
+    subtotal_expr = ExpressionWrapper(F('quantity') * F('unit_price'), output_field=DField(max_digits=14, decimal_places=2))
+    items_summary = (
+        SaleItem.objects
+        .filter(sale__in=current_sales)
+        .values('product__description')
+        .annotate(total_qty=Sum('quantity'), total_value=Sum(subtotal_expr))
+        .order_by('-total_value')
+    )
+
+    total_items_value = sum(r['total_value'] or 0 for r in items_summary)
+
     context = {
-        'sales_active':    sales_active,
-        'sales_paid':      sales_paid,
-        'sales_cancelled': sales_cancelled,
+        'sales_active':      sales_active,
+        'sales_paid':        sales_paid,
+        'sales_cancelled':   sales_cancelled,
+        'items_summary':     items_summary,
+        'total_items_value': total_items_value,
         'query':           query,
         'active_tab':      active_tab,
         'total_ventas':    Sale.objects.count(),
