@@ -1,0 +1,306 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Presupuestos — c6 Store{% endblock %}
+{% block header_title %}Presupuestos{% endblock %}
+{% block nav_quotes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <div>
+        <h1 class="page-title">Presupuestos</h1>
+        <p class="page-subtitle">Calculadora de costos e importación</p>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+
+<!-- ── Calculadora ── -->
+<div class="form-card">
+    <div class="form-section">
+        <h3 class="form-section-title">Calculadora</h3>
+
+        <!-- Cotización y proveedor -->
+        <div class="form-grid" style="margin-bottom:1rem;">
+            <div class="form-group">
+                <label class="form-label">Cotización USD (Gs.)</label>
+                <input type="number" id="cotizacion" class="gs-input" placeholder="Ej: 7800" min="1" step="1" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Proveedor</label>
+                <select id="supplier-select" class="form-select">
+                    <option value="">— Seleccionar proveedor —</option>
+                    {% for s in suppliers %}
+                    <option value="{{ s.pk }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Campos dinámicos -->
+        <div id="dynamic-fields" style="display:none;">
+            <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+            <div id="fields-container"></div>
+
+            <!-- Totales -->
+            <hr style="border:none;border-top:1.5px solid var(--border);margin:1rem 0;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Total USD</label>
+                    <input type="text" id="total-usd-display" class="field-readonly" readonly
+                           style="font-weight:700;font-size:1.05rem;">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Total Gs.</label>
+                    <input type="text" id="total-gs-display" class="field-readonly" readonly
+                           style="font-weight:700;font-size:1.05rem;color:var(--sea-navy);">
+                </div>
+            </div>
+
+            <!-- Guardar -->
+            <form method="post" action="{% url 'quote_save' %}" id="quote-form">
+                {% csrf_token %}
+                <input type="hidden" name="supplier"    id="h-supplier">
+                <input type="hidden" name="cotizacion"  id="h-cotizacion">
+                <input type="hidden" name="total_usd"   id="h-total-usd">
+                <input type="hidden" name="total_gs"    id="h-total-gs">
+                <input type="hidden" name="fields_data" id="h-fields-data">
+                <div class="form-group">
+                    <label class="form-label">Notas (opcional)</label>
+                    <input type="text" name="notes" class="form-input" placeholder="Descripción del producto, etc.">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;" id="btn-save">
+                    Guardar presupuesto
+                </button>
+            </form>
+        </div>
+
+        <div id="no-config-msg" style="display:none;padding:1.5rem;text-align:center;color:var(--text-muted);font-size:.88rem;">
+            Este proveedor no tiene configuración de presupuesto.
+            Podés agregarla desde el panel de administración.
+        </div>
+    </div>
+</div>
+
+<!-- ── Historial ── -->
+<div class="form-card">
+    <div class="form-section">
+        <h3 class="form-section-title">Historial</h3>
+        {% if quotes %}
+        <div style="display:flex;flex-direction:column;gap:.5rem;">
+            {% for q in quotes %}
+            <div style="border:1px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;background:var(--surface);">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
+                    <div>
+                        <span style="font-weight:700;font-size:.9rem;color:var(--sea-navy);">{{ q.supplier.name }}</span>
+                        <span style="font-size:.75rem;color:var(--text-muted);margin-left:.5rem;">{{ q.created_at|date:"d/m/Y H:i" }}</span>
+                        {% if q.notes %}<p style="margin:.2rem 0 0;font-size:.8rem;color:var(--text-muted);font-style:italic;">{{ q.notes }}</p>{% endif %}
+                    </div>
+                    <form method="post" action="{% url 'quote_delete' q.pk %}" style="flex-shrink:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon btn-icon--delete" title="Eliminar"
+                                onclick="return confirm('¿Eliminar este presupuesto?')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:.5rem;">
+                    <div>
+                        <span style="font-size:.72rem;color:var(--text-muted);display:block;">Cotiz.</span>
+                        <span style="font-size:.85rem;font-weight:600;">Gs. {{ q.cotizacion|floatformat:0 }}</span>
+                    </div>
+                    <div>
+                        <span style="font-size:.72rem;color:var(--text-muted);display:block;">Total USD</span>
+                        <span style="font-size:.85rem;font-weight:600;">$ {{ q.total_usd|floatformat:2 }}</span>
+                    </div>
+                    <div>
+                        <span style="font-size:.72rem;color:var(--text-muted);display:block;">Total Gs.</span>
+                        <span style="font-size:.85rem;font-weight:700;color:var(--sea-navy);">{{ q.total_gs|gs }}</span>
+                    </div>
+                </div>
+                <!-- Detalle de campos -->
+                {% if q.fields_data %}
+                <div style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem;">
+                    {% for k, v in q.fields_data.items %}
+                    <span style="font-size:.72rem;background:var(--surface-dark);border-radius:4px;padding:.15rem .5rem;color:var(--sea-charcoal);">
+                        {{ k }}: {{ v }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-muted);text-align:center;padding:2rem 0;font-size:.88rem;">
+            No hay presupuestos guardados aún.
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+</div><!-- /grid -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CONFIG_URL = '{% url "supplier_config_api" 0 %}'.replace('/0/', '/');
+
+const supplierSel  = document.getElementById('supplier-select');
+const cotizInput   = document.getElementById('cotizacion');
+const dynFields    = document.getElementById('dynamic-fields');
+const fieldsWrap   = document.getElementById('fields-container');
+const noConfigMsg  = document.getElementById('no-config-msg');
+const totalUsdEl   = document.getElementById('total-usd-display');
+const totalGsEl    = document.getElementById('total-gs-display');
+
+let currentConfig = [];
+
+// ── Formateo ──────────────────────────────────────────────────────────────
+function fmtUsd(n) {
+    return '$ ' + (Math.round(n * 100) / 100).toFixed(2);
+}
+function fmtGs(n) {
+    const v = Math.round(n);
+    return 'Gs. ' + v.toLocaleString('es-PY').replace(/,/g, '.');
+}
+
+// ── Carga config del proveedor ────────────────────────────────────────────
+supplierSel.addEventListener('change', () => {
+    const pk = supplierSel.value;
+    dynFields.style.display   = 'none';
+    noConfigMsg.style.display = 'none';
+    fieldsWrap.innerHTML      = '';
+    currentConfig             = [];
+
+    if (!pk) return;
+
+    fetch(CONFIG_URL + pk + '/')
+        .then(r => r.json())
+        .then(d => {
+            if (!d.fields || !d.fields.length) {
+                noConfigMsg.style.display = 'block';
+                return;
+            }
+            currentConfig = d.fields;
+            renderFields(d.fields);
+            dynFields.style.display = 'block';
+            recalc();
+        });
+});
+
+// ── Renderiza campos dinámicos ────────────────────────────────────────────
+function renderFields(fields) {
+    fieldsWrap.innerHTML = '';
+    fields.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.style.marginBottom = '.75rem';
+
+        const label = document.createElement('label');
+        label.className = 'form-label';
+        label.textContent = f.label;
+        div.appendChild(label);
+
+        const input = document.createElement('input');
+        input.type        = 'number';
+        input.id          = 'field-' + f.key;
+        input.dataset.key = f.key;
+        input.dataset.type = f.type;
+        input.step        = 'any';
+        input.autocomplete = 'off';
+
+        if (f.type === 'auto') {
+            input.readOnly  = true;
+            input.className = 'field-readonly';
+            input.value     = '0';
+        } else {
+            input.className = 'form-input';
+            input.value     = f.default !== undefined ? f.default : '';
+            input.placeholder = f.type === 'percent' ? '%' : '0';
+            input.addEventListener('input', recalc);
+        }
+
+        // Mostrar el monto calculado junto al %
+        if (f.type === 'percent') {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:.5rem;align-items:center;';
+            row.appendChild(input);
+            const amtSpan = document.createElement('span');
+            amtSpan.id = 'amt-' + f.key;
+            amtSpan.style.cssText = 'font-size:.8rem;color:var(--text-muted);white-space:nowrap;min-width:80px;';
+            amtSpan.textContent = '= $ 0.00';
+            row.appendChild(amtSpan);
+            div.appendChild(row);
+        } else {
+            div.appendChild(input);
+        }
+
+        fieldsWrap.appendChild(div);
+    });
+}
+
+// ── Recalcular ────────────────────────────────────────────────────────────
+function getVal(key) {
+    const el = document.getElementById('field-' + key);
+    return el ? (parseFloat(el.value) || 0) : 0;
+}
+
+function evalFormula(formula) {
+    // Sustituye keys por sus valores actuales
+    let expr = formula;
+    currentConfig.forEach(f => {
+        expr = expr.replace(new RegExp('\\b' + f.key + '\\b', 'g'), getVal(f.key));
+    });
+    try { return Function('"use strict"; return (' + expr + ')')(); }
+    catch(e) { return 0; }
+}
+
+function recalc() {
+    let totalUsd = 0;
+
+    currentConfig.forEach(f => {
+        let amount = 0;
+
+        if (f.type === 'number') {
+            amount = getVal(f.key);
+
+        } else if (f.type === 'percent') {
+            const pct  = getVal(f.key);
+            const base = getVal(f.base || 'costo');
+            amount = base * (pct / 100);
+            const span = document.getElementById('amt-' + f.key);
+            if (span) span.textContent = '= ' + fmtUsd(amount);
+
+        } else if (f.type === 'auto') {
+            amount = evalFormula(f.formula || '0');
+            const el = document.getElementById('field-' + f.key);
+            if (el) el.value = amount.toFixed(2);
+        }
+
+        if (f.in_total !== false) totalUsd += amount;
+    });
+
+    const cotiz  = parseFloat(cotizInput.value) || 0;
+    const totalGs = totalUsd * cotiz;
+
+    totalUsdEl.value = fmtUsd(totalUsd);
+    totalGsEl.value  = fmtGs(totalGs);
+
+    // Actualiza los hidden para el formulario de guardado
+    document.getElementById('h-supplier').value    = supplierSel.value;
+    document.getElementById('h-cotizacion').value  = cotiz;
+    document.getElementById('h-total-usd').value   = totalUsd.toFixed(2);
+    document.getElementById('h-total-gs').value    = Math.round(totalGs);
+
+    // Construye JSON de campos
+    const data = {};
+    currentConfig.forEach(f => { data[f.label] = getVal(f.key); });
+    document.getElementById('h-fields-data').value = JSON.stringify(data);
+}
+
+cotizInput.addEventListener('input', recalc);
+</script>
+{% endblock %}
