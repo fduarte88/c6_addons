@@ -20,7 +20,11 @@
     <div class="form-section">
         <h3 class="form-section-title">Calculadora</h3>
 
-        <!-- Cotización y proveedor -->
+        <!-- Descripción, cotización y proveedor -->
+        <div class="form-group" style="margin-bottom:.75rem;">
+            <label class="form-label">Descripción del producto</label>
+            <input type="text" id="description" class="form-input" placeholder="Nombre o descripción del producto a cotizar" autocomplete="off">
+        </div>
         <div class="form-grid" style="margin-bottom:1rem;">
             <div class="form-group">
                 <label class="form-label">Cotización USD (Gs.)</label>
@@ -60,7 +64,8 @@
             <!-- Guardar -->
             <form method="post" action="{% url 'quote_save' %}" id="quote-form">
                 {% csrf_token %}
-                <input type="hidden" name="supplier"    id="h-supplier">
+                <input type="hidden" name="supplier"     id="h-supplier">
+                <input type="hidden" name="description" id="h-description">
                 <input type="hidden" name="cotizacion"  id="h-cotizacion">
                 <input type="hidden" name="total_usd"   id="h-total-usd">
                 <input type="hidden" name="total_gs"    id="h-total-gs">
@@ -94,7 +99,8 @@
                     <div>
                         <span style="font-weight:700;font-size:.9rem;color:var(--sea-navy);">{{ q.supplier.name }}</span>
                         <span style="font-size:.75rem;color:var(--text-muted);margin-left:.5rem;">{{ q.created_at|date:"d/m/Y H:i" }}</span>
-                        {% if q.notes %}<p style="margin:.2rem 0 0;font-size:.8rem;color:var(--text-muted);font-style:italic;">{{ q.notes }}</p>{% endif %}
+                        {% if q.description %}<p style="margin:.2rem 0 0;font-size:.85rem;color:var(--sea-charcoal);font-weight:600;">{{ q.description }}</p>{% endif %}
+                        {% if q.notes %}<p style="margin:.1rem 0 0;font-size:.8rem;color:var(--text-muted);font-style:italic;">{{ q.notes }}</p>{% endif %}
                     </div>
                     <form method="post" action="{% url 'quote_delete' q.pk %}" style="flex-shrink:0;">
                         {% csrf_token %}
@@ -291,6 +297,7 @@ function recalc() {
 
     // Actualiza los hidden para el formulario de guardado
     document.getElementById('h-supplier').value    = supplierSel.value;
+    document.getElementById('h-description').value = document.getElementById('description').value;
     document.getElementById('h-cotizacion').value  = cotiz;
     document.getElementById('h-total-usd').value   = totalUsd.toFixed(2);
     document.getElementById('h-total-gs').value    = Math.round(totalGs);
@@ -302,5 +309,8 @@ function recalc() {
 }
 
 cotizInput.addEventListener('input', recalc);
+document.getElementById('description').addEventListener('input', () => {
+    document.getElementById('h-description').value = document.getElementById('description').value;
+});
 </script>
 {% endblock %}

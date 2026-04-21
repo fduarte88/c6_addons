@@ -26,6 +26,7 @@ class Quote(models.Model):
     """Presupuesto guardado."""
     supplier    = models.ForeignKey(Supplier, on_delete=models.PROTECT,
                                     related_name='quotes', verbose_name='Proveedor')
+    description = models.CharField('Descripción del producto', max_length=300, blank=True)
     cotizacion  = models.DecimalField('Cotización USD (Gs.)', max_digits=12, decimal_places=2)
     fields_data = models.JSONField('Valores', default=dict)
     total_usd   = models.DecimalField('Total USD', max_digits=14, decimal_places=2, default=0)

@@ -33,6 +33,7 @@ def quote_save(request):
         return redirect('quote_calculator')
 
     supplier_pk = request.POST.get('supplier')
+    description = request.POST.get('description', '').strip()
     cotizacion  = request.POST.get('cotizacion', '0').replace(',', '.')
     total_usd   = request.POST.get('total_usd', '0').replace(',', '.')
     total_gs    = request.POST.get('total_gs', '0').replace(',', '.').replace('.', '', -1)
@@ -52,6 +53,7 @@ def quote_save(request):
 
     Quote.objects.create(
         supplier=supplier,
+        description=description,
         cotizacion=float(cotizacion),
         fields_data=fields_data,
         total_usd=float(total_usd),
