@@ -20,10 +20,14 @@ def purchase_list(request):
             Q(pk__icontains=query)
         )
 
+    purchases_list  = list(purchases)
+    tab_total       = sum(p.total for p in purchases_list)
+
     context = {
-        'purchases':      purchases,
-        'query':          query,
-        'total_compras':  Purchase.objects.count(),
+        'purchases':     purchases_list,
+        'query':         query,
+        'total_compras': Purchase.objects.count(),
+        'tab_total':     tab_total,
     }
     return render(request, 'purchases/list.html', context)
 

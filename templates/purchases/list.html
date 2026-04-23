@@ -94,6 +94,13 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr style="background:var(--surface-dark);font-weight:700;">
+                <td colspan="4" style="padding:.65rem 1rem;text-align:right;">Total</td>
+                <td class="col-price">{{ tab_total|gs }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 {% endblock %}
