@@ -1,0 +1,110 @@
+{% extends 'base_dashboard.html' %}
+{% load guarani %}
+
+{% block title %}Informes — c6 Store{% endblock %}
+{% block header_title %}Informes{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Informes</h1>
+    <p class="page-subtitle">Resumen general de compras y ventas</p>
+</div>
+
+<!-- Compras vs Ventas -->
+<div class="form-card" style="margin-bottom:1.5rem;">
+    <div class="form-section">
+        <h3 class="form-section-title">Compras vs. Ventas</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+
+            <div style="background:var(--surface-dark);border-radius:var(--radius);padding:1.5rem;border:1px solid var(--border);display:flex;flex-direction:column;gap:.35rem;">
+                <span style="font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Total Compras</span>
+                <span style="font-size:1.6rem;font-weight:800;color:var(--sea-navy);">{{ total_compras|gs }}</span>
+                <span style="font-size:.78rem;color:var(--text-muted);">Monto total invertido en compras</span>
+            </div>
+
+            <div style="background:var(--surface-dark);border-radius:var(--radius);padding:1.5rem;border:1px solid var(--border);display:flex;flex-direction:column;gap:.35rem;">
+                <span style="font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Total Ventas</span>
+                <span style="font-size:1.6rem;font-weight:800;color:var(--sea-navy);">{{ total_ventas|gs }}</span>
+                <span style="font-size:.78rem;color:var(--text-muted);">Monto total facturado (excluye canceladas)</span>
+            </div>
+
+        </div>
+
+        <!-- Barra comparativa -->
+        {% if total_compras or total_ventas %}
+        {% with max_val=total_ventas|default:total_compras %}
+        <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:.6rem;">
+            {% with pct_c=total_compras|floatformat:0 %}
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.25rem;">
+                    <span style="font-weight:600;color:var(--sea-charcoal);">Compras</span>
+                    <span style="color:var(--text-muted);">{{ total_compras|gs }}</span>
+                </div>
+                <div style="background:var(--border);border-radius:4px;height:10px;overflow:hidden;">
+                    <div style="height:100%;background:var(--sea-steel);border-radius:4px;
+                        width:{% if total_ventas %}{% widthratio total_compras total_ventas 100 %}{% else %}100{% endif %}%;
+                        max-width:100%;transition:width .4s;"></div>
+                </div>
+            </div>
+            {% endwith %}
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.25rem;">
+                    <span style="font-weight:600;color:var(--sea-charcoal);">Ventas</span>
+                    <span style="color:var(--text-muted);">{{ total_ventas|gs }}</span>
+                </div>
+                <div style="background:var(--border);border-radius:4px;height:10px;overflow:hidden;">
+                    <div style="height:100%;background:var(--sea-navy);border-radius:4px;width:100%;transition:width .4s;"></div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Cobrado vs No cobrado -->
+<div class="form-card">
+    <div class="form-section">
+        <h3 class="form-section-title">Cobrado vs. Pendiente</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+
+            <div style="background:#f0faf4;border-radius:var(--radius);padding:1.5rem;border:1px solid #a7d9b5;display:flex;flex-direction:column;gap:.35rem;">
+                <span style="font-size:.78rem;font-weight:600;color:#276749;text-transform:uppercase;letter-spacing:.05em;">Total Cobrado</span>
+                <span style="font-size:1.6rem;font-weight:800;color:#276749;">{{ total_cobrado|gs }}</span>
+                <span style="font-size:.78rem;color:#4a9968;">Pagos recibidos de clientes</span>
+            </div>
+
+            <div style="background:#fff5f5;border-radius:var(--radius);padding:1.5rem;border:1px solid #f5b8b8;display:flex;flex-direction:column;gap:.35rem;">
+                <span style="font-size:.78rem;font-weight:600;color:#c0392b;text-transform:uppercase;letter-spacing:.05em;">Total Pendiente</span>
+                <span style="font-size:1.6rem;font-weight:800;color:#c0392b;">{{ total_pendiente|gs }}</span>
+                <span style="font-size:.78rem;color:#e05c5c;">Saldo aún no cobrado</span>
+            </div>
+
+        </div>
+
+        <!-- Barra cobrado vs pendiente -->
+        {% if total_ventas %}
+        <div style="margin-top:1.25rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.35rem;">
+                <span style="font-weight:600;color:var(--sea-charcoal);">Cobrado vs. Pendiente sobre total facturado</span>
+                <span style="color:var(--text-muted);">{{ total_ventas|gs }}</span>
+            </div>
+            <div style="background:var(--border);border-radius:4px;height:14px;overflow:hidden;display:flex;">
+                <div style="height:100%;background:#27ae60;
+                    width:{% widthratio total_cobrado total_ventas 100 %}%;
+                    max-width:100%;transition:width .4s;" title="Cobrado"></div>
+                <div style="height:100%;background:#e74c3c;
+                    width:{% widthratio total_pendiente total_ventas 100 %}%;
+                    max-width:100%;transition:width .4s;" title="Pendiente"></div>
+            </div>
+            <div style="display:flex;gap:1rem;margin-top:.4rem;font-size:.75rem;">
+                <span style="display:flex;align-items:center;gap:.3rem;"><span style="width:10px;height:10px;background:#27ae60;border-radius:2px;display:inline-block;"></span>Cobrado</span>
+                <span style="display:flex;align-items:center;gap:.3rem;"><span style="width:10px;height:10px;background:#e74c3c;border-radius:2px;display:inline-block;"></span>Pendiente</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -16,6 +16,9 @@ urlpatterns = [
     path('cliente/<int:customer_pk>/estado-cuenta/',     views.customer_statement,     name='customer_statement'),
     path('cliente/<int:customer_pk>/estado-cuenta/pdf/', views.customer_statement_pdf, name='customer_statement_pdf'),
 
+    # Informes
+    path('informes/', views.reports, name='reports'),
+
     # API búsqueda de cliente
     path('api/cliente/',      views.customer_search_api, name='customer_search_api'),
     path('api/cliente/<int:pk>/', views.customer_lookup_api, name='customer_lookup_api'),

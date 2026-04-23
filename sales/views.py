@@ -1,6 +1,7 @@
 import io
 import json
 from datetime import date as date_type
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,6 +12,7 @@ from customers.models import Customer
 from products.models import Product
 from .models import Sale, SaleItem, Payment
 from .forms import SaleForm, SaleItemFormSet, PaymentForm
+from purchases.models import Purchase, PurchaseItem
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -477,3 +479,31 @@ def customer_statement_pdf(request, customer_pk):
     response = HttpResponse(buf, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+
+# ──────────────────────────────────────────
+# INFORMES — Resumen general
+# ──────────────────────────────────────────
+
+@login_required
+def reports(request):
+    # ── Compras ──────────────────────────────────────────────────────────
+    purchase_items = PurchaseItem.objects.select_related('purchase')
+    total_compras  = sum(
+        i.subtotal for i in purchase_items
+    )
+
+    # ── Ventas (sin canceladas) ───────────────────────────────────────────
+    sales_qs       = Sale.objects.exclude(status=Sale.STATUS_CANCELLED) \
+                                 .prefetch_related('items', 'payments')
+    total_ventas   = sum(s.total      for s in sales_qs)
+    total_cobrado  = sum(s.total_paid for s in sales_qs)
+    total_pendiente= sum(s.balance    for s in sales_qs)
+
+    context = {
+        'total_compras':    total_compras,
+        'total_ventas':     total_ventas,
+        'total_cobrado':    total_cobrado,
+        'total_pendiente':  total_pendiente,
+    }
+    return render(request, 'sales/reports.html', context)
