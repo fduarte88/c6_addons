@@ -201,6 +201,7 @@ def payment_delete(request, pk):
 def customer_statement(request, customer_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     sales    = Sale.objects.filter(customer=customer) \
+                           .exclude(status=Sale.STATUS_CANCELLED) \
                            .prefetch_related('items__product', 'payments') \
                            .order_by('-date', '-created_at')
 
@@ -278,6 +279,7 @@ def _gs(value):
 def customer_statement_pdf(request, customer_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
     sales = Sale.objects.filter(customer=customer) \
+                        .exclude(status=Sale.STATUS_CANCELLED) \
                         .prefetch_related('items__product', 'payments') \
                         .order_by('-date', '-pk')
 
