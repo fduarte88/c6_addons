@@ -1,0 +1,41 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Eliminar Procedencia — c6 Store{% endblock %}
+{% block header_title %}Eliminar Procedencia{% endblock %}
+{% block nav_origins %}active{% endblock %}
+
+{% block content %}
+<div class="confirm-card">
+    <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+    <h2 class="confirm-title">¿Eliminar procedencia?</h2>
+    <p class="confirm-text">
+        Estás a punto de eliminar la procedencia <strong>{{ origin.name }}</strong>.
+        {% if origin.products.exists %}
+        <br><br>
+        <span style="color:#c0392b;font-weight:600;">
+            &#9888; Esta procedencia tiene {{ origin.products.count }} producto{{ origin.products.count|pluralize }} asociado{{ origin.products.count|pluralize }}
+            y no puede eliminarse.
+        </span>
+        {% else %}
+        <br>Esta acción no se puede deshacer.
+        {% endif %}
+    </p>
+    <div class="confirm-actions">
+        <a href="{% url 'origin_list' %}" class="btn btn-ghost">
+            {% if origin.products.exists %}Volver{% else %}Cancelar{% endif %}
+        </a>
+        {% if not origin.products.exists %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

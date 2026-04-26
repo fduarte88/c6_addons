@@ -10,47 +10,111 @@
     <p class="page-subtitle">Panel de control — c6 Store</p>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon stat-icon--blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-        </div>
-        <div class="stat-body">
-            <span class="stat-value">{{ total_users }}</span>
-            <span class="stat-label">Usuarios totales</span>
-        </div>
-    </div>
+<div class="dashboard-nav-grid">
 
-    <div class="stat-card">
-        <div class="stat-icon stat-icon--slate">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="4"/>
-                <path d="M6 20v-2a6 6 0 0 1 12 0v2"/>
-                <polyline points="16 11 18 13 22 9"/>
+    <a href="{% url 'customer_list' %}" class="dash-card dash-card--blue">
+        <div class="dash-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
             </svg>
         </div>
-        <div class="stat-body">
-            <span class="stat-value">{{ total_admins }}</span>
-            <span class="stat-label">Administradores</span>
+        <div class="dash-card-body">
+            <span class="dash-card-title">Clientes</span>
+            <span class="dash-card-count">{{ total_customers }}</span>
+            <span class="dash-card-sub">registrados</span>
         </div>
-    </div>
+        <svg class="dash-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </a>
 
-    <div class="stat-card">
-        <div class="stat-icon stat-icon--steel">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="4"/>
-                <path d="M6 20v-2a6 6 0 0 1 12 0v2"/>
+    <a href="{% url 'product_list' %}" class="dash-card dash-card--steel">
+        <div class="dash-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
             </svg>
         </div>
-        <div class="stat-body">
-            <span class="stat-value">{{ total_operators }}</span>
-            <span class="stat-label">Operadores</span>
+        <div class="dash-card-body">
+            <span class="dash-card-title">Productos</span>
+            <span class="dash-card-count">{{ total_products }}</span>
+            <span class="dash-card-sub">activos</span>
         </div>
-    </div>
+        <svg class="dash-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </a>
+
+    <a href="{% url 'sale_list' %}" class="dash-card dash-card--green">
+        <div class="dash-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+        </div>
+        <div class="dash-card-body">
+            <span class="dash-card-title">Ventas</span>
+            <span class="dash-card-count">{{ total_sales }}</span>
+            <span class="dash-card-sub">en total</span>
+        </div>
+        <svg class="dash-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </a>
+
+    <a href="{% url 'purchase_list' %}" class="dash-card dash-card--slate">
+        <div class="dash-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+        </div>
+        <div class="dash-card-body">
+            <span class="dash-card-title">Compras</span>
+            <span class="dash-card-count">{{ total_purchases }}</span>
+            <span class="dash-card-sub">en total</span>
+        </div>
+        <svg class="dash-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </a>
+
+    <a href="{% url 'reports' %}" class="dash-card dash-card--indigo">
+        <div class="dash-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+        </div>
+        <div class="dash-card-body">
+            <span class="dash-card-title">Informes</span>
+            <span class="dash-card-sub">Compras, ventas y cobros</span>
+        </div>
+        <svg class="dash-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </a>
+
+    <a href="{% url 'quote_calculator' %}" class="dash-card dash-card--amber">
+        <div class="dash-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+        </div>
+        <div class="dash-card-body">
+            <span class="dash-card-title">Presupuestos</span>
+            <span class="dash-card-sub">Calculadora por proveedor</span>
+        </div>
+        <svg class="dash-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+    </a>
+
 </div>
 {% endblock %}

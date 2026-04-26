@@ -3,8 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from .models import Category, Product
-from .forms import CategoryForm, ProductForm
+from .models import Category, Origin, Product
+from .forms import CategoryForm, OriginForm, ProductForm
 from accounts.views import admin_required
 
 
@@ -80,7 +80,7 @@ def product_list(request):
     if query:
         products = products.filter(
             Q(description__icontains=query) |
-            Q(origin__icontains=query)      |
+            Q(origin__name__icontains=query) |
             Q(category__name__icontains=query)
         )
     if cat_id:
@@ -164,3 +164,52 @@ def product_delete(request, pk):
         messages.success(request, f'Producto "{name}" eliminado.')
         return redirect('product_list')
     return render(request, 'products/confirm_delete.html', {'product': product})
+
+
+# ──────────────────────────────────────────
+# PROCEDENCIAS (Origin)
+# ──────────────────────────────────────────
+
+@login_required
+@admin_required
+def origin_list(request):
+    origins = Origin.objects.all()
+    return render(request, 'products/origins/list.html', {'origins': origins})
+
+
+@login_required
+@admin_required
+def origin_create(request):
+    form = OriginForm(request.POST or None)
+    if form.is_valid():
+        origin = form.save()
+        messages.success(request, f'Procedencia "{origin.name}" creada.')
+        return redirect('origin_list')
+    return render(request, 'products/origins/form.html', {'form': form, 'action': 'Nueva'})
+
+
+@login_required
+@admin_required
+def origin_edit(request, pk):
+    origin = get_object_or_404(Origin, pk=pk)
+    form   = OriginForm(request.POST or None, instance=origin)
+    if form.is_valid():
+        form.save()
+        messages.success(request, f'Procedencia "{origin.name}" actualizada.')
+        return redirect('origin_list')
+    return render(request, 'products/origins/form.html', {'form': form, 'action': 'Editar', 'origin': origin})
+
+
+@login_required
+@admin_required
+def origin_delete(request, pk):
+    origin = get_object_or_404(Origin, pk=pk)
+    if request.method == 'POST':
+        if origin.products.exists():
+            messages.error(request, f'No se puede eliminar "{origin.name}": tiene productos asociados.')
+            return redirect('origin_list')
+        name = origin.name
+        origin.delete()
+        messages.success(request, f'Procedencia "{name}" eliminada.')
+        return redirect('origin_list')
+    return render(request, 'products/origins/confirm_delete.html', {'origin': origin})

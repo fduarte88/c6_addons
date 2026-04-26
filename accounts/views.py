@@ -5,6 +5,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 from .forms import UserCreateForm, UserEditForm
+from customers.models import Customer
+from products.models import Product
+from sales.models import Sale
+from purchases.models import Purchase
 
 
 # ──────────────────────────────────────────
@@ -52,13 +56,11 @@ def logout_view(request):
 # ──────────────────────────────────────────
 @login_required
 def dashboard_view(request):
-    total_users    = User.objects.count()
-    total_admins   = UserProfile.objects.filter(role=UserProfile.ADMIN).count()
-    total_operators = UserProfile.objects.filter(role=UserProfile.OPERATOR).count()
     context = {
-        'total_users':     total_users,
-        'total_admins':    total_admins,
-        'total_operators': total_operators,
+        'total_customers': Customer.objects.count(),
+        'total_products':  Product.objects.filter(is_active=True).count(),
+        'total_sales':     Sale.objects.exclude(status=Sale.STATUS_CANCELLED).count(),
+        'total_purchases': Purchase.objects.count(),
     }
     return render(request, 'dashboard.html', context)
 

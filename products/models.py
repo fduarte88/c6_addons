@@ -2,6 +2,19 @@ from django.db import models
 from suppliers.models import Supplier
 
 
+class Origin(models.Model):
+    name      = models.CharField('País de procedencia', max_length=100, unique=True)
+    is_active = models.BooleanField('Activo', default=True)
+
+    class Meta:
+        verbose_name        = 'Procedencia'
+        verbose_name_plural = 'Procedencias'
+        ordering            = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Category(models.Model):
     TIPO_GENERAL    = 'GEN'
     TIPO_CALZADO    = 'CAL'
@@ -73,7 +86,11 @@ class Product(models.Model):
     ]
 
     description        = models.CharField('Descripción', max_length=200)
-    origin             = models.CharField('Procedencia', max_length=100)
+    origin             = models.ForeignKey(
+                            'Origin', on_delete=models.SET_NULL,
+                            null=True, blank=True,
+                            verbose_name='Procedencia', related_name='products'
+                         )
     supplier           = models.ForeignKey(
                             Supplier, on_delete=models.SET_NULL,
                             null=True, blank=True,

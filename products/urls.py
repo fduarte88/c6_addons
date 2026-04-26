@@ -10,8 +10,14 @@ urlpatterns = [
     path('<int:pk>/eliminar/',         views.product_delete,  name='product_delete'),
 
     # Categorías
-    path('categorias/',                views.category_list,   name='category_list'),
-    path('categorias/nueva/',          views.category_create, name='category_create'),
-    path('categorias/<int:pk>/editar/', views.category_edit,  name='category_edit'),
+    path('categorias/',                   views.category_list,   name='category_list'),
+    path('categorias/nueva/',             views.category_create, name='category_create'),
+    path('categorias/<int:pk>/editar/',   views.category_edit,   name='category_edit'),
     path('categorias/<int:pk>/eliminar/', views.category_delete, name='category_delete'),
+
+    # Procedencias
+    path('procedencias/',                   views.origin_list,   name='origin_list'),
+    path('procedencias/nueva/',             views.origin_create, name='origin_create'),
+    path('procedencias/<int:pk>/editar/',   views.origin_edit,   name='origin_edit'),
+    path('procedencias/<int:pk>/eliminar/', views.origin_delete, name='origin_delete'),
 ]

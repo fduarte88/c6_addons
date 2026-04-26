@@ -1,6 +1,14 @@
 from django import forms
 from suppliers.models import Supplier
-from .models import Category, Product
+from .models import Category, Origin, Product
+
+
+class OriginForm(forms.ModelForm):
+    class Meta:
+        model  = Origin
+        fields = ['name', 'is_active']
+        labels = {'name': 'País de procedencia', 'is_active': 'Activo'}
+        widgets = {'name': forms.TextInput(attrs={'placeholder': 'Ej: China, Argentina, Brasil'})}
 
 
 class CategoryForm(forms.ModelForm):
@@ -59,7 +67,6 @@ class ProductForm(forms.ModelForm):
         }
         widgets = {
             'description': forms.TextInput(attrs={'placeholder': 'Descripción del producto'}),
-            'origin':      forms.TextInput(attrs={'placeholder': 'Ej: China, Argentina, Brasil'}),
             'quantity':    forms.NumberInput(attrs={'readonly': True, 'tabindex': '-1', 'class': 'field-readonly'}),
             'cost_usd':    forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0,00'}),
             'cotizacion':  forms.NumberInput(attrs={'min': '0', 'step': '1',    'placeholder': 'Ej: 7.800'}),
@@ -73,6 +80,9 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset   = Category.objects.filter(is_active=True)
         self.fields['category'].empty_label = 'Selecciona una categoría'
+        self.fields['origin'].queryset    = Origin.objects.filter(is_active=True)
+        self.fields['origin'].required    = False
+        self.fields['origin'].empty_label = 'Sin procedencia'
         self.fields['calce'].required       = False
         self.fields['calce_us'].required    = False
         self.fields['calce_uk'].required    = False

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}c6 Store{% endblock %}</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="app-body">
@@ -34,83 +34,105 @@
             </div>
 
             <div class="nav-section">
-                <span class="nav-section-label">Comercial</span>
-                <a href="{% url 'customer_list' %}" class="nav-link {% block nav_customers %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
+                <button class="nav-section-toggle" data-section="comercial">
+                    <span class="nav-section-toggle-label">Comercial</span>
+                    <svg class="nav-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
                     </svg>
-                    <span>Clientes</span>
-                </a>
-                <a href="{% url 'product_list' %}" class="nav-link {% block nav_products %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                        <line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                    <span>Productos</span>
-                </a>
-                <a href="{% url 'sale_list' %}" class="nav-link {% block nav_sales %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    <span>Ventas</span>
-                </a>
-                <a href="{% url 'purchase_list' %}" class="nav-link {% block nav_purchases %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                        <line x1="3" y1="6" x2="21" y2="6"/>
-                        <path d="M16 10a4 4 0 0 1-8 0"/>
-                    </svg>
-                    <span>Compras</span>
-                </a>
-                <a href="{% url 'reports' %}" class="nav-link {% block nav_reports %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-                    </svg>
-                    <span>Informes</span>
-                </a>
-                <a href="{% url 'quote_calculator' %}" class="nav-link {% block nav_quotes %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    <span>Presupuestos</span>
-                </a>
-                <a href="{% url 'supplier_list' %}" class="nav-link {% block nav_suppliers %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    <span>Proveedores</span>
-                </a>
+                </button>
+                <div class="nav-section-links" id="sec-comercial">
+                    <a href="{% url 'customer_list' %}" class="nav-link {% block nav_customers %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="{% url 'product_list' %}" class="nav-link {% block nav_products %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <span>Productos</span>
+                    </a>
+                    <a href="{% url 'sale_list' %}" class="nav-link {% block nav_sales %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        <span>Ventas</span>
+                    </a>
+                    <a href="{% url 'purchase_list' %}" class="nav-link {% block nav_purchases %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        <span>Compras</span>
+                    </a>
+                    <a href="{% url 'reports' %}" class="nav-link {% block nav_reports %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                        <span>Informes</span>
+                    </a>
+                    <a href="{% url 'quote_calculator' %}" class="nav-link {% block nav_quotes %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        <span>Presupuestos</span>
+                    </a>
+                    <a href="{% url 'supplier_list' %}" class="nav-link {% block nav_suppliers %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span>Proveedores</span>
+                    </a>
+                </div>
             </div>
 
             {% if request.user.profile.is_admin %}
             <div class="nav-section">
-                <span class="nav-section-label">Administración</span>
-                <a href="{% url 'user_list' %}" class="nav-link {% block nav_users %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <button class="nav-section-toggle" data-section="admin">
+                    <span class="nav-section-toggle-label">Administración</span>
+                    <svg class="nav-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
                     </svg>
-                    <span>Usuarios</span>
-                </a>
-                <a href="{% url 'category_list' %}" class="nav-link {% block nav_categories %}{% endblock %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="8" y1="6" x2="21" y2="6"/>
-                        <line x1="8" y1="12" x2="21" y2="12"/>
-                        <line x1="8" y1="18" x2="21" y2="18"/>
-                        <line x1="3" y1="6" x2="3.01" y2="6"/>
-                        <line x1="3" y1="12" x2="3.01" y2="12"/>
-                        <line x1="3" y1="18" x2="3.01" y2="18"/>
-                    </svg>
-                    <span>Categorías</span>
-                </a>
+                </button>
+                <div class="nav-section-links" id="sec-admin">
+                    <a href="{% url 'user_list' %}" class="nav-link {% block nav_users %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span>Usuarios</span>
+                    </a>
+                    <a href="{% url 'category_list' %}" class="nav-link {% block nav_categories %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                        <span>Categorías</span>
+                    </a>
+                    <a href="{% url 'origin_list' %}" class="nav-link {% block nav_origins %}{% endblock %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <span>Procedencias</span>
+                    </a>
+                </div>
             </div>
             {% endif %}
         </nav>
@@ -173,6 +195,51 @@
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('collapsed');
 }
+
+// ── Secciones colapsables ──────────────────────────────────────────────────
+(function () {
+    function setSection(section, open) {
+        const btn   = document.querySelector('[data-section="' + section + '"]');
+        const links = document.getElementById('sec-' + section);
+        if (!btn || !links) return;
+        if (open) {
+            links.style.maxHeight = links.scrollHeight + 'px';
+            btn.classList.remove('collapsed');
+        } else {
+            links.style.maxHeight = '0';
+            btn.classList.add('collapsed');
+        }
+        localStorage.setItem('nav-' + section, open ? '1' : '0');
+    }
+
+    function initSections() {
+        document.querySelectorAll('.nav-section-toggle').forEach(function (btn) {
+            const section = btn.dataset.section;
+            const links   = document.getElementById('sec-' + section);
+            if (!links) return;
+
+            // Si tiene un link activo, siempre abierto
+            const hasActive = links.querySelector('.nav-link.active');
+            const stored    = localStorage.getItem('nav-' + section);
+            const open      = hasActive ? true : (stored === null ? true : stored === '1');
+
+            // Sin transición en el arranque inicial
+            links.style.transition = 'none';
+            setSection(section, open);
+            // Reactivar transición después del primer frame
+            requestAnimationFrame(function () {
+                links.style.transition = '';
+            });
+
+            btn.addEventListener('click', function () {
+                const isOpen = btn.classList.contains('collapsed');
+                setSection(section, isOpen);
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initSections);
+})();
 </script>
 {% block extra_js %}{% endblock %}
 </body>
