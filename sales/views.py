@@ -495,15 +495,35 @@ def reports(request):
 
     # ── Ventas (sin canceladas) ───────────────────────────────────────────
     sales_qs       = Sale.objects.exclude(status=Sale.STATUS_CANCELLED) \
+                                 .select_related('customer') \
                                  .prefetch_related('items', 'payments')
     total_ventas   = sum(s.total      for s in sales_qs)
     total_cobrado  = sum(s.total_paid for s in sales_qs)
     total_pendiente= sum(s.balance    for s in sales_qs)
+
+    # ── Detalle por cliente ───────────────────────────────────────────────
+    customer_map = {}
+    for s in sales_qs:
+        c = s.customer
+        if c.pk not in customer_map:
+            customer_map[c.pk] = {
+                'doc':      c.doc_number,
+                'name':     c.full_name,
+                'ventas':   0,
+                'cobrado':  0,
+                'saldo':    0,
+            }
+        customer_map[c.pk]['ventas']  += s.total
+        customer_map[c.pk]['cobrado'] += s.total_paid
+        customer_map[c.pk]['saldo']   += s.balance
+
+    customer_rows = sorted(customer_map.values(), key=lambda r: r['saldo'], reverse=True)
 
     context = {
         'total_compras':    total_compras,
         'total_ventas':     total_ventas,
         'total_cobrado':    total_cobrado,
         'total_pendiente':  total_pendiente,
+        'customer_rows':    customer_rows,
     }
     return render(request, 'sales/reports.html', context)

@@ -107,4 +107,44 @@
     </div>
 </div>
 
+<!-- Detalle por cliente -->
+<div class="table-card" style="margin-top:1.5rem;">
+    <div style="padding:1rem 1.5rem .5rem;">
+        <h3 style="font-size:.95rem;font-weight:700;color:var(--sea-navy);margin:0;">Detalle por cliente</h3>
+        <p style="font-size:.8rem;color:var(--text-muted);margin:.2rem 0 0;">Ventas activas por cliente, ordenadas por saldo pendiente</p>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Documento</th>
+                <th>Nombre / Apellido</th>
+                <th style="text-align:right;">Total Venta</th>
+                <th style="text-align:right;">Total Cobrado</th>
+                <th style="text-align:right;">Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in customer_rows %}
+            <tr>
+                <td style="color:var(--text-muted);font-size:.85rem;">{{ row.doc }}</td>
+                <td style="font-weight:600;">{{ row.name }}</td>
+                <td class="col-price" style="text-align:right;">{{ row.ventas|gs }}</td>
+                <td class="col-price" style="text-align:right;">{{ row.cobrado|gs }}</td>
+                <td class="col-price" style="text-align:right;{% if row.saldo > 0 %}color:#c0392b;font-weight:700;{% endif %}">{{ row.saldo|gs }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="table-empty">No hay datos de clientes.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="background:var(--surface-dark);font-weight:700;">
+                <td colspan="2" style="padding:.65rem 1rem;text-align:right;">Totales</td>
+                <td class="col-price" style="text-align:right;">{{ total_ventas|gs }}</td>
+                <td class="col-price" style="text-align:right;">{{ total_cobrado|gs }}</td>
+                <td class="col-price" style="text-align:right;{% if total_pendiente > 0 %}color:#c0392b;{% endif %}">{{ total_pendiente|gs }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
 {% endblock %}
