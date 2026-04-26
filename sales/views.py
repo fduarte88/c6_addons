@@ -507,6 +507,7 @@ def reports(request):
         c = s.customer
         if c.pk not in customer_map:
             customer_map[c.pk] = {
+                'pk':       c.pk,
                 'doc':      c.doc_number,
                 'name':     c.full_name,
                 'ventas':   0,

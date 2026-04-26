@@ -121,6 +121,7 @@
                 <th style="text-align:right;">Total Venta</th>
                 <th style="text-align:right;">Total Cobrado</th>
                 <th style="text-align:right;">Saldo</th>
+                <th style="width:48px;"></th>
             </tr>
         </thead>
         <tbody>
@@ -131,9 +132,16 @@
                 <td class="col-price" style="text-align:right;">{{ row.ventas|gs }}</td>
                 <td class="col-price" style="text-align:right;">{{ row.cobrado|gs }}</td>
                 <td class="col-price" style="text-align:right;{% if row.saldo > 0 %}color:#c0392b;font-weight:700;{% endif %}">{{ row.saldo|gs }}</td>
+                <td>
+                    <a href="{% url 'customer_statement' row.pk %}" class="btn-icon btn-icon--view" title="Ver estado de cuenta">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </a>
+                </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="table-empty">No hay datos de clientes.</td></tr>
+            <tr><td colspan="6" class="table-empty">No hay datos de clientes.</td></tr>
             {% endfor %}
         </tbody>
         <tfoot>
@@ -142,6 +150,7 @@
                 <td class="col-price" style="text-align:right;">{{ total_ventas|gs }}</td>
                 <td class="col-price" style="text-align:right;">{{ total_cobrado|gs }}</td>
                 <td class="col-price" style="text-align:right;{% if total_pendiente > 0 %}color:#c0392b;{% endif %}">{{ total_pendiente|gs }}</td>
+                <td></td>
             </tr>
         </tfoot>
     </table>
