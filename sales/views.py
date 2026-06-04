@@ -330,16 +330,28 @@ def customer_statement_pdf(request, customer_pk):
     story = []
 
     # ── Encabezado ─────────────────────────────────────────────────────────
-    story.append(Paragraph('c6 Store', style('Brand', fontSize=10, textColor=STEEL, fontName='Helvetica-Bold')))
-    story.append(Paragraph('Estado de Cuenta', s_title))
-    story.append(Paragraph(
-        f'{customer.full_name} &mdash; {customer.get_doc_type_display()} {customer.doc_number}',
-        s_subtitle,
-    ))
-    story.append(Paragraph(
-        f'Teléfono: {customer.phone_display} &nbsp;&nbsp; Generado: {date_type.today().strftime("%d/%m/%Y")}',
-        s_muted,
-    ))
+    s_date_r = style('DateR', fontSize=8, textColor=GREY, leading=10, alignment=TA_RIGHT)
+    header_left = [
+        Paragraph('c6 Store', style('Brand', fontSize=10, textColor=STEEL, fontName='Helvetica-Bold')),
+        Paragraph('Estado de Cuenta', s_title),
+        Paragraph(customer.full_name, s_subtitle),
+        Paragraph(f'Teléfono: {customer.phone_display}', s_muted),
+    ]
+    header_right = [
+        Paragraph(f'Generado: {date_type.today().strftime("%d/%m/%Y")}', s_date_r),
+    ]
+    header_table = Table(
+        [[header_left, header_right]],
+        colWidths=[W * 0.72, W * 0.28],
+    )
+    header_table.setStyle(TableStyle([
+        ('VALIGN',       (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING',  (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING',   (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 0),
+    ]))
+    story.append(header_table)
     story.append(HRFlowable(width='100%', thickness=1.5, color=NAVY, spaceAfter=10, spaceBefore=6))
 
     # ── Resumen ────────────────────────────────────────────────────────────

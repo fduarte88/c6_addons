@@ -113,10 +113,12 @@ class Payment(models.Model):
     TYPE_CASH     = 'EFE'
     TYPE_TRANSFER = 'TRF'
     TYPE_CARD     = 'TAR'
+    TYPE_DISCOUNT = 'DSC'
     TYPE_CHOICES = [
         (TYPE_CASH,     'Efectivo'),
         (TYPE_TRANSFER, 'Transferencia'),
         (TYPE_CARD,     'Tarjeta'),
+        (TYPE_DISCOUNT, 'Descuento'),
     ]
 
     sale         = models.ForeignKey(Sale, on_delete=models.CASCADE,

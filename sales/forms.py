@@ -120,7 +120,9 @@ class PaymentForm(forms.ModelForm):
             raise forms.ValidationError('El monto debe ser mayor a cero.')
         if self.sale and amount:
             if amount > self.sale.balance:
+                ptype = self.cleaned_data.get('payment_type', '')
+                label = 'El descuento' if ptype == Payment.TYPE_DISCOUNT else 'El monto'
                 raise forms.ValidationError(
-                    f'El monto ({amount:,.0f} Gs.) supera el saldo pendiente ({self.sale.balance:,.0f} Gs.).'
+                    f'{label} ({amount:,.0f} Gs.) supera el saldo pendiente ({self.sale.balance:,.0f} Gs.).'
                 )
         return amount

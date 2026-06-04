@@ -60,11 +60,11 @@
 
                 {% with field=form.amount %}
                 <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <label class="form-label" for="{{ field.id_for_label }}" id="amount-label">{{ field.label }}</label>
                     {{ field }}
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                     <div class="margin-indicator" id="nuevo-saldo-box" style="display:none;margin-top:.5rem;">
-                        <span class="margin-label">Nuevo saldo tras este pago:</span>
+                        <span class="margin-label" id="nuevo-saldo-label">Nuevo saldo tras este pago:</span>
                         <span class="margin-value" id="nuevo-saldo-value"></span>
                     </div>
                 </div>
@@ -77,6 +77,16 @@
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                 </div>
                 {% endwith %}
+
+                <!-- Hint descuento -->
+                <div id="discount-hint" class="form-group form-group--full" style="display:none;">
+                    <div class="field-hint" style="display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:6px;color:#92400e;font-size:.83rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Ingresá el valor del descuento. Se descontará del saldo pendiente de la venta.
+                    </div>
+                </div>
 
                 {% with field=form.notes %}
                 <div class="form-group form-group--full {% if field.errors %}has-error{% endif %}">
@@ -103,31 +113,49 @@ function fmtGs(n) {
     return 'Gs. ' + v.toLocaleString('es-PY').replace(/,/g, '.');
 }
 
-const amountInput  = document.getElementById('id_amount');
-const typeSelect   = document.getElementById('id_payment_type');
-const refGroup     = document.getElementById('reference-group');
-const nuevoBox     = document.getElementById('nuevo-saldo-box');
-const nuevoVal     = document.getElementById('nuevo-saldo-value');
+const amountInput    = document.getElementById('id_amount');
+const typeSelect     = document.getElementById('id_payment_type');
+const refGroup       = document.getElementById('reference-group');
+const nuevoBox       = document.getElementById('nuevo-saldo-box');
+const nuevoVal       = document.getElementById('nuevo-saldo-value');
+const nuevoLabel     = document.getElementById('nuevo-saldo-label');
+const amountLabel    = document.getElementById('amount-label');
+const discountHint   = document.getElementById('discount-hint');
 
 function updatePreview() {
     const monto = parseFloat(amountInput.value) || 0;
     if (monto > 0) {
         const nuevo = saldo - monto;
-        nuevoVal.textContent  = fmtGs(nuevo < 0 ? 0 : nuevo);
-        nuevoVal.className    = 'margin-value ' + (nuevo <= 0 ? 'margin-pos' : 'margin-neg');
+        nuevoVal.textContent   = fmtGs(nuevo < 0 ? 0 : nuevo);
+        nuevoVal.className     = 'margin-value ' + (nuevo <= 0 ? 'margin-pos' : 'margin-neg');
         nuevoBox.style.display = 'flex';
     } else {
         nuevoBox.style.display = 'none';
     }
 }
 
-function toggleRef() {
-    refGroup.style.display = (typeSelect.value === 'TRF') ? 'flex' : 'none';
+function onTypeChange() {
+    const isDiscount = typeSelect.value === 'DSC';
+    const isTransfer = typeSelect.value === 'TRF';
+
+    // Referencia solo para transferencias
+    refGroup.style.display    = isTransfer ? 'flex' : 'none';
+
+    // Hint e indicadores según tipo
+    discountHint.style.display = isDiscount ? 'block' : 'none';
+    amountLabel.textContent    = isDiscount ? 'Valor del descuento (Gs.)' : 'Monto (Gs.)';
+    nuevoLabel.textContent     = isDiscount ? 'Saldo tras el descuento:' : 'Nuevo saldo tras este pago:';
+
+    // Al elegir descuento, prellenar con el saldo completo
+    if (isDiscount && !amountInput.value) {
+        amountInput.value = Math.round(saldo);
+        updatePreview();
+    }
 }
 
 amountInput.addEventListener('input', updatePreview);
-typeSelect.addEventListener('change', toggleRef);
-toggleRef();
+typeSelect.addEventListener('change', onTypeChange);
+onTypeChange();
 updatePreview();
 </script>
 {% endblock %}

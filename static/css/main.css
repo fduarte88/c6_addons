@@ -1473,6 +1473,7 @@ body {
 .pay-type--efe { background: #eef5f0; color: #2d6a4f; }
 .pay-type--trf { background: #e8f0f5; color: var(--sea-slate); }
 .pay-type--tar { background: #ece8f5; color: #5a3d8a; }
+.pay-type--dsc { background: #fef3c7; color: #92400e; }
 
 /* Estado de cuenta por cliente */
 .statement-sale-card {
