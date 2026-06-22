@@ -20,6 +20,11 @@ urlpatterns = [
     path('informes/', views.reports, name='reports'),
 
     # API búsqueda de cliente
-    path('api/cliente/',      views.customer_search_api, name='customer_search_api'),
-    path('api/cliente/<int:pk>/', views.customer_lookup_api, name='customer_lookup_api'),
+    path('api/cliente/',          views.customer_search_api,       name='customer_search_api'),
+    path('api/cliente/nuevo/',    views.customer_quick_create_api, name='customer_quick_create_api'),
+    path('api/cliente/<int:pk>/', views.customer_lookup_api,       name='customer_lookup_api'),
+
+    # API búsqueda de producto
+    path('api/producto/',          views.sale_product_search_api, name='sale_product_search_api'),
+    path('api/producto/<int:pk>/', views.sale_product_lookup_api, name='sale_product_lookup_api'),
 ]

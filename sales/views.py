@@ -1,5 +1,4 @@
 import io
-import json
 from datetime import date as date_type
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import JsonResponse, HttpResponse
 from customers.models import Customer
+from customers.forms import CustomerForm
 from products.models import Product
 from .models import Sale, SaleItem, Payment
 from .forms import SaleForm, SaleItemFormSet, PaymentForm
@@ -80,10 +80,6 @@ def sale_list(request):
 
 @login_required
 def sale_create(request):
-    # JSON de precios distribuidor para autocompletar en el formulario
-    prices = {str(p.pk): float(p.distributor_price)
-              for p in Product.objects.filter(is_active=True, quantity__gt=0)}
-
     if request.method == 'POST':
         form    = SaleForm(request.POST)
         formset = SaleItemFormSet(request.POST)
@@ -103,7 +99,6 @@ def sale_create(request):
         'form':      form,
         'formset':   formset,
         'action':    'Nueva',
-        'prices_json': json.dumps(prices),
     })
 
 
@@ -241,6 +236,59 @@ def customer_lookup_api(request, pk):
         })
     except Customer.DoesNotExist:
         return JsonResponse({'error': 'Cliente no encontrado'}, status=404)
+
+
+@login_required
+def customer_quick_create_api(request):
+    """Crea un cliente nuevo desde el formulario de venta (AJAX)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    form = CustomerForm(request.POST)
+    if form.is_valid():
+        customer = form.save(commit=False)
+        customer.is_active = True   # siempre activo al crear
+        customer.save()
+        return JsonResponse({
+            'id':   customer.pk,
+            'code': customer.pk,
+            'name': customer.full_name,
+            'doc':  customer.doc_number,
+        })
+    return JsonResponse({'errors': form.errors.get_json_data()}, status=400)
+
+
+@login_required
+def sale_product_lookup_api(request, pk):
+    """Devuelve datos de un producto activo con stock por su ID (código)."""
+    try:
+        p = Product.objects.get(pk=pk, is_active=True, quantity__gt=0)
+        return JsonResponse({
+            'id':          p.pk,
+            'code':        p.pk,
+            'description': p.description,
+            'price':       float(p.distributor_price),
+            'stock':       p.quantity,
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({'error': 'Producto no encontrado o sin stock'}, status=404)
+
+
+@login_required
+def sale_product_search_api(request):
+    """Busca productos activos con stock por descripción o código. q='*' devuelve todos."""
+    q = request.GET.get('q', '').strip()
+    base_qs = Product.objects.filter(is_active=True, quantity__gt=0).order_by('description')
+    if not q or q == '*':
+        products = base_qs[:50]
+    else:
+        products = base_qs.filter(
+            Q(description__icontains=q) | Q(pk__icontains=q)
+        )[:20]
+    results = [
+        {'id': p.pk, 'code': p.pk, 'description': p.description, 'price': float(p.distributor_price), 'stock': p.quantity}
+        for p in products
+    ]
+    return JsonResponse({'results': results})
 
 
 @login_required

@@ -1083,6 +1083,10 @@ body {
     border-radius: var(--radius-sm);
     transition: background var(--transition), color var(--transition);
     text-decoration: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
 }
 .btn-icon svg { width: 16px; height: 16px; }
 
@@ -1142,6 +1146,13 @@ body {
 }
 
 .date-dmy { font-variant-numeric: tabular-nums; letter-spacing: .03em; }
+
+.date-picker-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
 
 .form-group input,
 .form-group select {
@@ -1457,8 +1468,29 @@ body {
 .items-table .item-product { width: 100%; min-width: 160px; }
 .items-table .item-qty     { width: 64px; text-align: center; }
 .items-table .item-price   { width: 110px; text-align: right; }
+.items-table .item-code    { width: 100%; min-width: 60px; }
 .item-subtotal             { font-weight: 700; white-space: nowrap; }
 .items-total-row td        { font-size: 1rem; }
+
+.items-table input[type="text"],
+.items-table input[type="number"],
+.items-table select {
+    padding: .5rem .65rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: .88rem;
+    font-family: inherit;
+    background: var(--surface-alt);
+    color: var(--text-main);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.items-table input:focus,
+.items-table select:focus {
+    border-color: var(--sea-mid);
+    box-shadow: 0 0 0 3px rgba(89,107,117,.12);
+    background: var(--surface);
+}
 
 /* Badges tipo de pago */
 .pay-type-badge {

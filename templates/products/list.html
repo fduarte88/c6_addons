@@ -11,12 +11,20 @@
         <h1 class="page-title">Productos</h1>
         <p class="page-subtitle">Catálogo completo de productos</p>
     </div>
-    <a href="{% url 'product_create' %}" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Nuevo producto
-    </a>
+    <div style="display:flex;gap:.6rem;">
+        <button type="button" id="btn-back-to-opener" class="btn btn-ghost" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Volver a la compra
+        </button>
+        <a href="{% url 'product_create' %}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nuevo producto
+        </a>
+    </div>
 </div>
 
 <!-- Resumen -->
@@ -170,4 +178,21 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Si esta pestaña se abrió desde otra (ej: "Nuevo producto" en Compras),
+// mostrar un botón para cerrarla y devolver el foco a la original.
+(function () {
+    if (!window.opener || window.opener.closed) return;
+    const btn = document.getElementById('btn-back-to-opener');
+    if (!btn) return;
+    btn.style.display = '';
+    btn.addEventListener('click', () => {
+        window.opener.focus();
+        window.close();
+    });
+})();
+</script>
 {% endblock %}

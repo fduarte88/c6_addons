@@ -52,7 +52,6 @@
                 <th>#</th>
                 <th>Fecha</th>
                 <th>Proveedor</th>
-                <th>Productos</th>
                 <th>Total</th>
                 <th>Acciones</th>
             </tr>
@@ -63,7 +62,6 @@
                 <td class="col-id">{{ p.pk }}</td>
                 <td>{{ p.date|date:"d/m/Y" }}</td>
                 <td>{{ p.supplier|default:"—" }}</td>
-                <td>{{ p.total_items }} unid.</td>
                 <td class="col-price">{{ p.total|gs }}</td>
                 <td>
                     <div class="action-btns">
@@ -85,7 +83,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="table-empty">
+                <td colspan="5" class="table-empty">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
@@ -96,7 +94,7 @@
         </tbody>
         <tfoot>
             <tr style="background:var(--surface-dark);font-weight:700;">
-                <td colspan="4" style="padding:.65rem 1rem;text-align:right;">Total</td>
+                <td colspan="3" style="padding:.65rem 1rem;text-align:right;">Total</td>
                 <td class="col-price">{{ tab_total|gs }}</td>
                 <td></td>
             </tr>

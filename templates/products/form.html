@@ -14,7 +14,7 @@
             {% endif %}
         </p>
     </div>
-    <a href="{% url 'product_list' %}" class="btn btn-ghost">
+    <a href="{% url 'product_list' %}" id="btn-back" class="btn btn-ghost">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -219,7 +219,7 @@
         {% endif %}
 
         <div class="form-actions">
-            <a href="{% url 'product_list' %}" class="btn btn-ghost">Cancelar</a>
+            <a href="{% url 'product_list' %}" id="btn-cancel" class="btn btn-ghost">Cancelar</a>
             <button type="submit" class="btn btn-primary">
                 {% if action == 'Registrar' %}Registrar producto{% else %}Guardar cambios{% endif %}
             </button>
@@ -349,5 +349,21 @@ priceInput.addEventListener('input', updateMargin);
 // Inicializar al cargar (modo edición)
 updateSizeFields();
 updateMargin();
+
+// ── Si esta pestaña se abrió desde otra (ej: "Nuevo producto" en Compras),
+// "Volver"/"Cancelar" cierran esta pestaña y devuelven el foco a la original
+// en lugar de navegar al listado de productos.
+(function () {
+    if (!window.opener || window.opener.closed) return;
+    function closeAndReturn(e) {
+        e.preventDefault();
+        window.opener.focus();
+        window.close();
+    }
+    const backBtn   = document.getElementById('btn-back');
+    const cancelBtn = document.getElementById('btn-cancel');
+    if (backBtn)   backBtn.addEventListener('click', closeAndReturn);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeAndReturn);
+})();
 </script>
 {% endblock %}

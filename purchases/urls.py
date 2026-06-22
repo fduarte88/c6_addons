@@ -6,4 +6,8 @@ urlpatterns = [
     path('nueva/',        views.purchase_create, name='purchase_create'),
     path('<int:pk>/',     views.purchase_detail, name='purchase_detail'),
     path('<int:pk>/eliminar/', views.purchase_delete, name='purchase_delete'),
+
+    # API búsqueda de producto (para el formulario de compras)
+    path('api/producto/',          views.purchase_product_search_api, name='purchase_product_search_api'),
+    path('api/producto/<int:pk>/', views.purchase_product_lookup_api, name='purchase_product_lookup_api'),
 ]

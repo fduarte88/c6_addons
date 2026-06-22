@@ -1,9 +1,9 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from products.models import Product
 from .models import Purchase, PurchaseItem
 from .forms import PurchaseForm, PurchaseItemFormSet
@@ -34,8 +34,6 @@ def purchase_list(request):
 
 @login_required
 def purchase_create(request):
-    prices = {str(p.pk): float(p.cost) for p in Product.objects.filter(is_active=True)}
-
     if request.method == 'POST':
         form    = PurchaseForm(request.POST)
         formset = PurchaseItemFormSet(request.POST)
@@ -55,9 +53,45 @@ def purchase_create(request):
         'form':    form,
         'formset': formset,
         'action':  'Registrar',
-        'prices':  json.dumps(prices),
     }
     return render(request, 'purchases/form.html', context)
+
+
+# ──────────────────────────────────────────
+# API — Búsqueda de productos (AJAX, para el formulario de compras)
+# ──────────────────────────────────────────
+
+@login_required
+def purchase_product_lookup_api(request, pk):
+    """Devuelve datos de un producto por su ID (código)."""
+    try:
+        p = Product.objects.get(pk=pk, is_active=True)
+        return JsonResponse({
+            'id':          p.pk,
+            'code':        p.pk,
+            'description': p.description,
+            'cost':        float(p.cost),
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({'error': 'Producto no encontrado'}, status=404)
+
+
+@login_required
+def purchase_product_search_api(request):
+    """Busca productos activos por descripción o código. q='*' devuelve todos."""
+    q = request.GET.get('q', '').strip()
+    base_qs = Product.objects.filter(is_active=True).order_by('description')
+    if not q or q == '*':
+        products = base_qs[:50]
+    else:
+        products = base_qs.filter(
+            Q(description__icontains=q) | Q(pk__icontains=q)
+        )[:20]
+    results = [
+        {'id': p.pk, 'code': p.pk, 'description': p.description, 'cost': float(p.cost)}
+        for p in products
+    ]
+    return JsonResponse({'results': results})
 
 
 @login_required
