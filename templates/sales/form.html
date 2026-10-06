@@ -9,7 +9,7 @@
 <div class="page-header page-header--row">
     <div>
         <h1 class="page-title">Nueva Venta</h1>
-        <p class="page-subtitle">Registra la venta de uno o más productos a un cliente</p>
+        <p class="page-subtitle">Registra productos, servicios o deudas de un cliente</p>
     </div>
     <a href="{% url 'sale_list' %}" class="btn btn-ghost">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -83,15 +83,26 @@
 <!-- Items de la venta -->
 <div class="form-card" style="margin-bottom:1.25rem;">
     <div class="form-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-            <h3 class="form-section-title" style="margin-bottom:0;">Productos</h3>
-            <button type="button" class="btn btn-secondary" id="btn-add-item" onclick="addItemRow()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Agregar producto
-            </button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem;">
+            <h3 class="form-section-title" style="margin-bottom:0;">Productos y conceptos</h3>
+            <div style="display:flex;gap:.5rem;">
+                <button type="button" class="btn btn-secondary" id="btn-add-item" onclick="addItemRow()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Agregar producto
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-add-concept" onclick="addConceptRow()" title="Servicio o deuda, sin producto ni stock">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Agregar concepto
+                </button>
+            </div>
         </div>
+        <p class="field-hint" style="margin:0 0 1rem;">
+            Para cobrar un servicio o registrar una deuda sin producto, deja el código vacío y escribe el concepto y su monto. No mueve stock.
+        </p>
 
         {{ formset.management_form }}
 
@@ -122,7 +133,8 @@
                             {% if item_form.product.errors %}<span class="field-error">{{ item_form.product.errors.0 }}</span>{% endif %}
                         </td>
                         <td>
-                            <input type="text" class="item-desc field-readonly" placeholder="Descripción del producto" readonly style="width:100%;">
+                            {{ item_form.description }}
+                            {% if item_form.description.errors %}<span class="field-error">{{ item_form.description.errors.0 }}</span>{% endif %}
                         </td>
                         <td>
                             {{ item_form.talle }}
@@ -317,6 +329,27 @@ function sizesLabel(sizes) {
     return sizes && sizes.length ? ' · ' + sizes.map(s => `${s.talle} ${s.stock}`).join(', ') : '';
 }
 
+// La descripción muestra el producto (bloqueada) o, sin producto, es el concepto libre editable
+const DESC_PLACEHOLDER = 'Producto, o un concepto: servicio, deuda...';
+
+function setDescLocked(row, locked) {
+    const descInput = row.querySelector('.item-desc');
+    descInput.readOnly = locked;
+    descInput.classList.toggle('field-readonly', locked);
+    descInput.tabIndex = locked ? -1 : 0;
+}
+
+// Quita el producto de la fila y la deja como concepto libre
+function clearRowProduct(row, placeholder) {
+    const hiddenSel = row.querySelector('.item-product');
+    const descInput = row.querySelector('.item-desc');
+    if (hiddenSel.value) descInput.value = '';   // el texto era el nombre del producto
+    hiddenSel.value = '';
+    descInput.placeholder = placeholder || DESC_PLACEHOLDER;
+    setDescLocked(row, false);
+    setRowSizes(row, []);
+}
+
 function setRowProduct(row, id, desc, price, sizes) {
     const hiddenSel  = row.querySelector('.item-product');
     const codeInput  = row.querySelector('.item-code');
@@ -325,6 +358,8 @@ function setRowProduct(row, id, desc, price, sizes) {
 
     codeInput.value = id;
     descInput.value = desc;
+    descInput.placeholder = DESC_PLACEHOLDER;
+    setDescLocked(row, true);
     let opt = hiddenSel.querySelector(`option[value="${id}"]`);
     if (!opt) {
         opt = new Option(desc, id, true, true);
@@ -339,16 +374,15 @@ function setRowProduct(row, id, desc, price, sizes) {
 }
 
 function lookupRowByCode(row, code) {
-    const descInput = row.querySelector('.item-desc');
-    const hiddenSel = row.querySelector('.item-product');
-    if (!code) { descInput.value = ''; hiddenSel.value = ''; setRowSizes(row, []); return; }
+    // Código vacío: la fila queda como concepto libre (se conserva lo que se haya escrito)
+    if (!code) { clearRowProduct(row); return; }
     fetch(PRODUCT_LOOKUP_URL + code + '/')
         .then(r => r.json())
         .then(d => {
-            if (d.error) { descInput.value = '— no encontrado —'; hiddenSel.value = ''; setRowSizes(row, []); }
+            if (d.error) clearRowProduct(row, '— código no encontrado —');
             else setRowProduct(row, d.id, d.description, d.price, d.sizes);
         })
-        .catch(() => { descInput.value = '— error —'; });
+        .catch(() => clearRowProduct(row, '— error al buscar el código —'));
 }
 
 function bindRow(row) {
@@ -358,16 +392,18 @@ function bindRow(row) {
     const qtyInput   = row.querySelector('.item-qty');
     const priceInput = row.querySelector('.item-price');
 
-    // Si ya hay un producto seleccionado (no debería pasar al crear, por si acaso)
+    // Tras un error de validación la fila puede venir con un producto ya elegido
     if (hiddenSel.value) {
         codeInput.value = hiddenSel.value;
         const selOpt = hiddenSel.options[hiddenSel.selectedIndex];
         if (selOpt) descInput.value = selOpt.text;
-        // Tras un error de validación: recupera los talles del producto sin perder el elegido
+        setDescLocked(row, true);
+        // Recupera los talles del producto sin perder el elegido
         fetch(PRODUCT_LOOKUP_URL + hiddenSel.value + '/')
             .then(r => r.json())
             .then(d => setRowSizes(row, d.sizes || [], true));
     } else {
+        setDescLocked(row, false);   // concepto libre (puede venir ya escrito)
         setRowSizes(row, []);
     }
 
@@ -418,10 +454,18 @@ function addItemRow() {
         sel.value = '';
     });
     clone.querySelector('.item-subtotal').textContent = 'Gs. 0';
+    clone.querySelector('.item-desc').placeholder = DESC_PLACEHOLDER;
 
     body.appendChild(clone);
     renumberRows();
     bindRow(clone);
+    return clone;
+}
+
+// Fila sin producto: servicio o deuda. Va directo a escribir el concepto.
+function addConceptRow() {
+    const row = addItemRow();
+    row.querySelector('.item-desc').focus();
 }
 
 function removeRow(btn) {

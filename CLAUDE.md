@@ -13,7 +13,7 @@ pip install -r requirements.txt
 python manage.py runserver
 python manage.py makemigrations <app>
 python manage.py migrate
-python manage.py test                        # creates/destroys test_carbono_db; accounts, purchases, quotes, sales have no tests
+python manage.py test                        # creates/destroys test_carbono_db; accounts, purchases, quotes have no tests
 python manage.py test store.tests.StoreCategoryTests.test_filtra_por_subcategoria
 ```
 
@@ -43,6 +43,8 @@ Non-obvious placement:
 Clothing products have stock per size in `ProductSize` rows (`product.sizes`, one per offered size). When a line has a `talle`, `add_stock` moves that size and recomputes `Product.quantity` as the sum of the sizes, so the total stays valid everywhere else (store filter, lists, APIs).
 
 Because the logic lives in `save()`/`delete()`, bulk queryset operations (`.update()`, `QuerySet.delete()`, cascade deletes) bypass it. That is why `purchase_delete` deletes items one by one before deleting the purchase. Keep this in mind for any new code that removes or edits items.
+
+A `SaleItem` may have no `product`. That is a free concept line ("concepto libre": a service or a debt), stored as `description` + `unit_price`, which counts toward the sale total but never touches stock. A DB check constraint requires either a product or a description. Stock code must skip lines without `product_id`, and templates and the PDF display any line through `item.label`, which gives the product (with talle) or the concept. In the sale form, a row with an empty code is a concept row, and its description input is editable only while no product is selected.
 
 Sales and purchases have no edit views, and neither app registers its models in Django admin: a sale can only be cancelled and a purchase only deleted. Today nothing reaches the "edit an existing line" branch of `SaleItem.save()`/`PurchaseItem.save()`, so test it if you add editing.
 

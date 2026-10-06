@@ -1485,6 +1485,7 @@ body {
 .items-table .item-qty     { width: 64px; text-align: center; }
 .items-table .item-price   { width: 110px; text-align: right; }
 .items-table .item-code    { width: 100%; min-width: 60px; }
+.items-table .item-desc    { width: 100%; }
 .item-subtotal             { font-weight: 700; white-space: nowrap; }
 .items-total-row td        { font-size: 1rem; }
 

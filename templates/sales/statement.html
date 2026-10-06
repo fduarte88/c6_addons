@@ -65,13 +65,13 @@
             <table class="data-table" style="font-size:.85rem;">
                 <thead>
                     <tr>
-                        <th>Producto</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th>
+                        <th>Descripción</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in sale.items.all %}
                     <tr>
-                        <td>{{ item.product.description }}{% if item.talle %} — Talle {{ item.talle }}{% endif %}</td>
+                        <td>{{ item.label }}</td>
                         <td>{{ item.quantity }}</td>
                         <td class="col-price">{{ item.unit_price|gs }}</td>
                         <td class="col-price">{{ item.subtotal|gs }}</td>

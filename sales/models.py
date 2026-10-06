@@ -62,22 +62,41 @@ class Sale(models.Model):
 
 
 class SaleItem(models.Model):
-    sale       = models.ForeignKey(Sale, on_delete=models.CASCADE,
-                                   verbose_name='Venta', related_name='items')
-    product    = models.ForeignKey(Product, on_delete=models.PROTECT,
-                                   verbose_name='Producto')
-    quantity   = models.PositiveIntegerField('Cantidad', default=1)
-    unit_price = models.DecimalField('Precio unitario', max_digits=14, decimal_places=2)
-    talle      = models.CharField('Talle', max_length=5, blank=True, choices=Product.TALLE_CHOICES,
-                                  help_text='Solo si el producto maneja stock por talle')
+    """
+    Línea de venta: un producto del catálogo o un concepto libre (servicio, deuda…).
+    El concepto libre no tiene producto ni mueve stock.
+    """
+    sale        = models.ForeignKey(Sale, on_delete=models.CASCADE,
+                                    verbose_name='Venta', related_name='items')
+    product     = models.ForeignKey(Product, on_delete=models.PROTECT,
+                                    null=True, blank=True, verbose_name='Producto')
+    description = models.CharField('Concepto', max_length=200, blank=True,
+                                   help_text='Solo para líneas sin producto: un servicio, una deuda, etc.')
+    quantity    = models.PositiveIntegerField('Cantidad', default=1)
+    unit_price  = models.DecimalField('Precio unitario', max_digits=14, decimal_places=2)
+    talle       = models.CharField('Talle', max_length=5, blank=True, choices=Product.TALLE_CHOICES,
+                                   help_text='Solo si el producto maneja stock por talle')
 
     class Meta:
         verbose_name        = 'Ítem de venta'
         verbose_name_plural = 'Ítems de venta'
+        constraints         = [
+            models.CheckConstraint(
+                condition=models.Q(product__isnull=False) | ~models.Q(description=''),
+                name='saleitem_product_or_description',
+            ),
+        ]
 
     def __str__(self):
-        talle = f' ({self.talle})' if self.talle else ''
-        return f'{self.quantity} × {self.product.description}{talle}'
+        return f'{self.quantity} × {self.label}'
+
+    @property
+    def label(self):
+        """Lo que se muestra en detalle, estado de cuenta y PDF: producto (y talle) o concepto."""
+        if not self.product_id:
+            return self.description
+        talle = f' — Talle {self.talle}' if self.talle else ''
+        return f'{self.product.description}{talle}'
 
     @property
     def subtotal(self):
@@ -85,7 +104,7 @@ class SaleItem(models.Model):
 
     def save(self, *args, **kwargs):
         # Si no se especificó precio, usa el precio de lista del producto
-        if not self.unit_price:
+        if not self.unit_price and self.product_id:
             self.unit_price = self.product.list_price
 
         old = SaleItem.objects.select_related('product').filter(pk=self.pk).first() if self.pk else None
@@ -93,18 +112,21 @@ class SaleItem(models.Model):
 
         # Descuenta stock (del talle, si corresponde). Al editar solo se mueve la diferencia;
         # si cambió el producto o el talle, se devuelve lo anterior y se descuenta lo nuevo.
+        # Los conceptos libres no tienen producto y no mueven stock.
         if old and (old.product_id, old.talle) == (self.product_id, self.talle):
             diff = self.quantity - old.quantity
-            if diff:
+            if diff and self.product_id:
                 self.product.add_stock(-diff, self.talle)
         else:
-            if old:
+            if old and old.product_id:
                 old.product.add_stock(old.quantity, old.talle)
-            self.product.add_stock(-self.quantity, self.talle)
+            if self.product_id:
+                self.product.add_stock(-self.quantity, self.talle)
 
     def delete(self, *args, **kwargs):
         # Devuelve el stock al eliminar el ítem
-        self.product.add_stock(self.quantity, self.talle)
+        if self.product_id:
+            self.product.add_stock(self.quantity, self.talle)
         super().delete(*args, **kwargs)
 
 

@@ -53,11 +53,11 @@
     <!-- Productos -->
     <div class="detail-data-card">
         <div class="detail-section">
-            <h3 class="form-section-title">Productos vendidos</h3>
+            <h3 class="form-section-title">Productos y conceptos</h3>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Producto</th>
+                        <th>Descripción</th>
                         <th>Cant.</th>
                         <th>Precio unit.</th>
                         <th>Subtotal</th>
@@ -67,8 +67,8 @@
                     {% for item in sale.items.all %}
                     <tr>
                         <td>
-                            <div class="username">{{ item.product.description }}{% if item.talle %} — Talle {{ item.talle }}{% endif %}</div>
-                            <div class="cell-sub">{{ item.product.category.full_name }}</div>
+                            <div class="username">{{ item.label }}</div>
+                            <div class="cell-sub">{% if item.product_id %}{{ item.product.category.full_name }}{% else %}Concepto libre · sin stock{% endif %}</div>
                         </td>
                         <td>{{ item.quantity }}</td>
                         <td class="col-price">{{ item.unit_price|gs }}</td>

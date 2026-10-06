@@ -1,6 +1,7 @@
 import io
 from datetime import date as date_type
 from decimal import Decimal
+from xml.sax.saxutils import escape
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -131,7 +132,8 @@ def sale_cancel(request, pk):
     if request.method == 'POST':
         if sale.status != Sale.STATUS_CANCELLED:
             # Devuelve stock de cada ítem (al talle, si corresponde)
-            for item in sale.items.select_related('product').all():
+            # Los conceptos libres (sin producto) no tienen stock que devolver
+            for item in sale.items.select_related('product').filter(product__isnull=False):
                 item.product.add_stock(item.quantity, item.talle)
         sale.status = Sale.STATUS_CANCELLED
         sale.save(update_fields=['status'])
@@ -475,14 +477,14 @@ def customer_statement_pdf(request, customer_pk):
 
         # Productos
         items_data = [[
-            Paragraph('Producto', s_section),
+            Paragraph('Descripción', s_section),
             Paragraph('Cant.', style('CH', parent=s_section, alignment=TA_RIGHT)),
             Paragraph('Precio unit.', style('CH', parent=s_section, alignment=TA_RIGHT)),
             Paragraph('Subtotal', style('CH', parent=s_section, alignment=TA_RIGHT)),
         ]]
         for item in sale.items.all():
             items_data.append([
-                Paragraph(item.product.description + (f' — Talle {item.talle}' if item.talle else ''), s_normal),
+                Paragraph(escape(item.label), s_normal),   # texto libre: se escapa para ReportLab
                 Paragraph(str(item.quantity), s_right),
                 Paragraph(_gs(item.unit_price), s_right),
                 Paragraph(_gs(item.subtotal), s_right),

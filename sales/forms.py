@@ -34,16 +34,19 @@ class SaleForm(forms.ModelForm):
 class SaleItemForm(forms.ModelForm):
     class Meta:
         model  = SaleItem
-        fields = ['product', 'talle', 'quantity', 'unit_price']
+        fields = ['product', 'description', 'talle', 'quantity', 'unit_price']
         labels = {
-            'product':    'Producto',
-            'talle':      'Talle',
-            'quantity':   'Cant.',
-            'unit_price': 'Precio unit. (Gs.)',
+            'product':     'Producto',
+            'description': 'Concepto',
+            'talle':       'Talle',
+            'quantity':    'Cant.',
+            'unit_price':  'Precio unit. (Gs.)',
         }
         widgets = {
-            'product':    forms.Select(attrs={'class': 'item-product'}),
-            'talle':      forms.Select(attrs={'class': 'item-talle'}),
+            'product':     forms.Select(attrs={'class': 'item-product'}),
+            'description': forms.TextInput(attrs={'class': 'item-desc', 'autocomplete': 'off',
+                                                  'placeholder': 'Producto, o un concepto: servicio, deuda...'}),
+            'talle':       forms.Select(attrs={'class': 'item-talle'}),
             'quantity':   forms.NumberInput(attrs={'min': '1', 'class': 'item-qty', 'placeholder': '1'}),
             'unit_price': forms.NumberInput(attrs={'min': '0', 'step': '1', 'class': 'item-price', 'placeholder': '0'}),
         }
@@ -57,6 +60,7 @@ class SaleItemForm(forms.ModelForm):
                            .order_by('description')
         )
         self.fields['product'].empty_label = 'Selecciona un producto'
+        self.fields['product'].required    = False  # sin producto = concepto libre
         self.fields['talle'].choices = [('', '—')] + list(Product.TALLE_CHOICES)
 
     def clean(self):
@@ -64,6 +68,18 @@ class SaleItemForm(forms.ModelForm):
         product  = cleaned.get('product')
         quantity = cleaned.get('quantity')
         talle    = cleaned.get('talle', '')
+
+        # Concepto libre (servicio, deuda…): sin producto, sin talle y sin control de stock
+        if not product:
+            cleaned['talle'] = ''
+            if not cleaned.get('description', '').strip():
+                self.add_error('description', 'Ingresa un producto o escribe un concepto.')
+            price = cleaned.get('unit_price')
+            if price is not None and price <= 0:
+                self.add_error('unit_price', 'Ingresa el monto del concepto.')
+            return cleaned
+        # La descripción del producto sale del catálogo
+        cleaned['description'] = ''
 
         # Producto con stock por talle: el talle es obligatorio y el stock se controla por talle
         if product and product.talles:
