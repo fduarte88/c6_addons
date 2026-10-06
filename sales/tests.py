@@ -87,6 +87,30 @@ class ConceptoLibreTests(TestCase):
         self.assertEqual(pdf.status_code, 200)
         self.assertEqual(pdf['Content-Type'], 'application/pdf')
 
+    def post_venta(self, *filas):
+        data = {
+            'customer': self.customer.pk, 'date': '06/10/2026', 'notes': '',
+            'items-TOTAL_FORMS': len(filas), 'items-INITIAL_FORMS': 0,
+            'items-MIN_NUM_FORMS': 1, 'items-MAX_NUM_FORMS': 1000,
+        }
+        for i, fila in enumerate(filas):
+            base = {'product': '', 'description': '', 'quantity': 1, 'unit_price': ''}
+            data.update({f'items-{i}-{k}': v for k, v in {**base, **fila}.items()})
+        return self.client.post(reverse('sale_create'), data)
+
+    def test_filas_vacias_se_ignoran(self):
+        # La primera fila quedó vacía y el concepto se cargó en la segunda
+        response = self.post_venta({}, {'description': 'Calzado futsal adidas', 'unit_price': 400000})
+        sale = Sale.objects.get()
+        self.assertRedirects(response, reverse('sale_detail', args=[sale.pk]))
+        self.assertEqual([i.label for i in sale.items.all()], ['Calzado futsal adidas'])
+        self.assertEqual(sale.total, 400000)
+
+    def test_sin_ninguna_linea_cargada_avisa(self):
+        response = self.post_venta({}, {})
+        self.assertContains(response, 'Agrega al menos un producto o concepto.')
+        self.assertFalse(Sale.objects.exists())
+
     def test_cancelar_devuelve_solo_el_stock_de_productos(self):
         sale = Sale.objects.create(customer=self.customer)
         SaleItem.objects.create(sale=sale, product=self.gorra, quantity=2, unit_price=45000)

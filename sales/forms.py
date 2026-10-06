@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import BaseInlineFormSet, inlineformset_factory
 from customers.models import Customer
 from products.models import Product
 from .models import Sale, SaleItem, Payment
@@ -45,7 +45,7 @@ class SaleItemForm(forms.ModelForm):
         widgets = {
             'product':     forms.Select(attrs={'class': 'item-product'}),
             'description': forms.TextInput(attrs={'class': 'item-desc', 'autocomplete': 'off',
-                                                  'placeholder': 'Producto, o un concepto: servicio, deuda...'}),
+                                                  'placeholder': 'Producto o concepto'}),
             'talle':       forms.Select(attrs={'class': 'item-talle'}),
             'quantity':   forms.NumberInput(attrs={'min': '1', 'class': 'item-qty', 'placeholder': '1'}),
             'unit_price': forms.NumberInput(attrs={'min': '0', 'step': '1', 'class': 'item-price', 'placeholder': '0'}),
@@ -105,10 +105,24 @@ class SaleItemForm(forms.ModelForm):
         return cleaned
 
 
+class BaseSaleItemFormSet(BaseInlineFormSet):
+    """
+    Las filas que quedaron vacías (también la primera) se ignoran: alcanza con
+    que haya al menos una línea cargada (validate_min cuenta solo las filas con datos).
+    """
+    default_error_messages = {
+        'too_few_forms': 'Agrega al menos un producto o concepto.',
+    }
+
+    def _construct_form(self, i, **kwargs):
+        return super()._construct_form(i, empty_permitted=True, **kwargs)
+
+
 # Formset inline — mínimo 1 item, máximo 50
 SaleItemFormSet = inlineformset_factory(
     Sale, SaleItem,
     form=SaleItemForm,
+    formset=BaseSaleItemFormSet,
     extra=0,
     min_num=1,
     validate_min=True,

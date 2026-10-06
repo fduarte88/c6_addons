@@ -86,7 +86,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem;">
             <h3 class="form-section-title" style="margin-bottom:0;">Productos y conceptos</h3>
             <div style="display:flex;gap:.5rem;">
-                <button type="button" class="btn btn-secondary" id="btn-add-item" onclick="addItemRow()">
+                <button type="button" class="btn btn-secondary" id="btn-add-item" onclick="addProductRow()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
@@ -330,7 +330,7 @@ function sizesLabel(sizes) {
 }
 
 // La descripción muestra el producto (bloqueada) o, sin producto, es el concepto libre editable
-const DESC_PLACEHOLDER = 'Producto, o un concepto: servicio, deuda...';
+const DESC_PLACEHOLDER = 'Producto o concepto';
 
 function setDescLocked(row, locked) {
     const descInput = row.querySelector('.item-desc');
@@ -448,6 +448,8 @@ function addItemRow() {
     const clone = body.querySelector('.item-row').cloneNode(true);
 
     clone.querySelectorAll('input').forEach(el => { el.value = ''; });
+    clone.querySelector('.item-qty').value = 1;
+    clone.querySelectorAll('.field-error').forEach(el => el.remove());   // errores de la fila copiada
     // Limpiar opciones dinámicas heredadas del clon
     clone.querySelectorAll('select.item-product').forEach(sel => {
         while (sel.options.length > 1) sel.remove(1);
@@ -462,10 +464,26 @@ function addItemRow() {
     return clone;
 }
 
+// Fila sin código, producto, concepto ni precio
+function isRowEmpty(row) {
+    return !row.querySelector('.item-code').value.trim()
+        && !row.querySelector('.item-product').value
+        && !row.querySelector('.item-desc').value.trim()
+        && !row.querySelector('.item-price').value;
+}
+
+// Los botones reutilizan una fila vacía (p. ej. la primera) antes de agregar otra
+function emptyOrNewRow() {
+    return Array.from(document.querySelectorAll('.item-row')).find(isRowEmpty) || addItemRow();
+}
+
+function addProductRow() {
+    emptyOrNewRow().querySelector('.item-code').focus();
+}
+
 // Fila sin producto: servicio o deuda. Va directo a escribir el concepto.
 function addConceptRow() {
-    const row = addItemRow();
-    row.querySelector('.item-desc').focus();
+    emptyOrNewRow().querySelector('.item-desc').focus();
 }
 
 function removeRow(btn) {
