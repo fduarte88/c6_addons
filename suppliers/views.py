@@ -65,10 +65,15 @@ def supplier_edit(request, pk):
 
 @login_required
 def supplier_delete(request, pk):
-    supplier = get_object_or_404(Supplier, pk=pk)
+    supplier   = get_object_or_404(Supplier, pk=pk)
+    has_quotes = supplier.quotes.exists()  # los presupuestos protegen al proveedor (PROTECT)
     if request.method == 'POST':
+        if has_quotes:
+            messages.error(request, f'No se puede eliminar "{supplier.name}": tiene presupuestos registrados. '
+                                    'Puedes desactivarlo desde Editar.')
+            return redirect('supplier_list')
         name = supplier.name
         supplier.delete()
         messages.success(request, f'Proveedor "{name}" eliminado.')
         return redirect('supplier_list')
-    return render(request, 'suppliers/confirm_delete.html', {'supplier': supplier})
+    return render(request, 'suppliers/confirm_delete.html', {'supplier': supplier, 'has_quotes': has_quotes})

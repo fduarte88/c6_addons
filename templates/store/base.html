@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<meta name="description" content="{% block meta_description %}c6 Store — calzado, vestimenta e importados. Tu tienda de confianza.{% endblock %}">
+<meta property="og:title" content="{% block og_title %}c6 Store{% endblock %}">
+<meta property="og:description" content="Calzado, vestimenta e importados. Tu tienda de confianza.">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/c6-perfil-negro.png' %}">
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=3">
+{% block store_css %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+
+<!-- Header -->
+<header class="lp-header {% block header_class %}{% endblock %}" id="lp-header">
+    <div class="lp-container lp-header-inner">
+        <a href="{% url 'home' %}" class="lp-brand">
+            <span class="lp-brand-mark">
+                <img src="{% static 'img/c6-logo.svg' %}" alt="">
+            </span>
+            <span class="lp-brand-name">c6 <span>Store</span></span>
+        </a>
+
+        <nav class="lp-nav">
+            <a href="{% url 'home' %}#inicio">Inicio</a>
+            <a href="{% url 'home' %}#ofrecemos">Productos</a>
+            <a href="{% url 'store_category' 'camisetas' %}" class="{% block nav_camisetas %}{% endblock %}">Camisetas</a>
+            <a href="{% url 'home' %}#portal">Portal</a>
+        </nav>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="lp-btn lp-btn-light lp-btn-sm">
+            Ir al portal
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="lp-btn lp-btn-light lp-btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Iniciar sesión
+        </a>
+        {% endif %}
+    </div>
+</header>
+
+{% block content %}{% endblock %}
+
+<!-- Footer -->
+<footer class="lp-footer">
+    <div class="lp-container lp-footer-inner">
+        <a href="{% url 'home' %}" class="lp-brand">
+            <span class="lp-brand-mark">
+                <img src="{% static 'img/c6-logo.svg' %}" alt="">
+            </span>
+            <span class="lp-brand-name">c6 <span>Store</span></span>
+        </a>
+        <p>&copy; {% now "Y" %} c6 Store. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const header = document.getElementById('lp-header');
+    function onScroll() {
+        header.classList.toggle('scrolled', window.scrollY > 24);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+})();
+</script>
+{% block store_js %}{% endblock %}
+{% endblock %}

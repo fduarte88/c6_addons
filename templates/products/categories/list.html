@@ -33,7 +33,13 @@
         <tbody>
             {% for cat in categories %}
             <tr>
-                <td><strong>{{ cat.name }}</strong></td>
+                <td>
+                    {% if cat.parent %}
+                    <span class="cell-sub">{{ cat.parent.name }} ›</span> <strong>{{ cat.name }}</strong>
+                    {% else %}
+                    <strong>{{ cat.name }}</strong>
+                    {% endif %}
+                </td>
                 <td>
                     <span class="tipo-badge tipo-{{ cat.tipo|lower }}">
                         {{ cat.get_tipo_display }}
@@ -52,6 +58,16 @@
                 </td>
                 <td>
                     <div class="action-btns">
+                        {% if not cat.parent and cat.is_active %}
+                        <a href="{% url 'store_category' cat.slug %}" class="btn-icon btn-icon--edit" title="Ver en la tienda online" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                        </a>
+                        {% else %}
+                        <span class="btn-icon" aria-hidden="true"></span>
+                        {% endif %}
                         <a href="{% url 'category_edit' cat.pk %}" class="btn-icon btn-icon--edit" title="Editar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

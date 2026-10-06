@@ -51,7 +51,7 @@
                 <tbody>
                     {% for item in purchase.items.all %}
                     <tr>
-                        <td>{{ item.product.description }}</td>
+                        <td>{{ item.product.description }}{% if item.talle %} — Talle {{ item.talle }}{% endif %}</td>
                         <td>{{ item.quantity }}</td>
                         <td class="col-price">{{ item.unit_cost|gs }}</td>
                         <td class="col-price">{{ item.subtotal|gs }}</td>

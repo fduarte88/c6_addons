@@ -15,7 +15,7 @@ from accounts.views import admin_required
 @login_required
 @admin_required
 def category_list(request):
-    categories = Category.objects.all()
+    categories = Category.objects.tree()
     return render(request, 'products/categories/list.html', {'categories': categories})
 
 
@@ -58,6 +58,9 @@ def category_delete(request, pk):
         if category.products.exists():
             messages.error(request, f'No se puede eliminar "{category.name}": tiene productos asociados.')
             return redirect('category_list')
+        if category.children.exists():
+            messages.error(request, f'No se puede eliminar "{category.name}": tiene subcategorías.')
+            return redirect('category_list')
         name = category.name
         category.delete()
         messages.success(request, f'Categoría "{name}" eliminada.')
@@ -75,7 +78,7 @@ def product_list(request):
     cat_id   = request.GET.get('category', '')
     status   = request.GET.get('status', '')
 
-    products = Product.objects.select_related('category').all()
+    products = Product.objects.select_related('category__parent').all()
 
     if query:
         products = products.filter(
@@ -84,7 +87,8 @@ def product_list(request):
             Q(category__name__icontains=query)
         )
     if cat_id:
-        products = products.filter(category_id=cat_id)
+        # Una categoría principal incluye los productos de sus subcategorías
+        products = products.filter(Q(category_id=cat_id) | Q(category__parent_id=cat_id))
     if status == 'active':
         products = products.filter(is_active=True)
     elif status == 'inactive':
@@ -95,7 +99,7 @@ def product_list(request):
         'query':      query,
         'cat_id':     cat_id,
         'status':     status,
-        'categories': Category.objects.filter(is_active=True),
+        'categories': Category.objects.filter(is_active=True).tree(),
         'total':      Product.objects.count(),
         'activos':    Product.objects.filter(is_active=True).count(),
         'sin_stock':  Product.objects.filter(quantity=0).count(),
@@ -105,7 +109,7 @@ def product_list(request):
 
 @login_required
 def product_detail(request, pk):
-    product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+    product = get_object_or_404(Product.objects.select_related('category__parent'), pk=pk)
     return render(request, 'products/detail.html', {'product': product})
 
 
@@ -118,11 +122,12 @@ def _category_types_json():
 @login_required
 def product_create(request):
     if request.method == 'POST':
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save(commit=False)
             product.is_active = True    # siempre activo al crear
             product.save()
+            form.save_m2m()             # guarda los talles (ProductSize)
             messages.success(request, f'Producto "{product.description}" registrado correctamente.')
             return redirect('product_list')
     else:
@@ -139,7 +144,7 @@ def product_create(request):
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
             messages.success(request, f'Producto "{product.description}" actualizado.')
@@ -158,12 +163,18 @@ def product_edit(request, pk):
 @login_required
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    # Los ítems de venta y de compra protegen al producto (PROTECT)
+    in_use  = product.saleitem_set.exists() or product.purchaseitem_set.exists()
     if request.method == 'POST':
+        if in_use:
+            messages.error(request, f'No se puede eliminar "{product.description}": tiene ventas o compras registradas. '
+                                    'Puedes desactivarlo desde Editar.')
+            return redirect('product_list')
         name = product.description
         product.delete()
         messages.success(request, f'Producto "{name}" eliminado.')
         return redirect('product_list')
-    return render(request, 'products/confirm_delete.html', {'product': product})
+    return render(request, 'products/confirm_delete.html', {'product': product, 'in_use': in_use})
 
 
 # ──────────────────────────────────────────

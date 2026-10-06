@@ -11,10 +11,20 @@
         </svg>
         <h2 style="margin-bottom:.5rem;color:var(--sea-navy);">Eliminar Proveedor</h2>
         <p style="color:var(--text-secondary);margin-bottom:0;">
+            {% if has_quotes %}
+            <strong>{{ supplier.name }}</strong> tiene presupuestos registrados y no puede eliminarse.<br>
+            Puedes desactivarlo desde Editar.
+            {% else %}
             ¿Estás seguro de que deseas eliminar a <strong>{{ supplier.name }}</strong>?<br>
             Los productos asociados a este proveedor quedarán sin proveedor asignado.
+            {% endif %}
         </p>
     </div>
+    {% if has_quotes %}
+    <div class="form-actions" style="justify-content:center;">
+        <a href="{% url 'supplier_list' %}" class="btn btn-ghost">Volver</a>
+    </div>
+    {% else %}
     <form method="post">
         {% csrf_token %}
         <div class="form-actions" style="justify-content:center;">
@@ -22,5 +32,6 @@
             <button type="submit" class="btn btn-danger">Sí, eliminar</button>
         </div>
     </form>
+    {% endif %}
 </div>
 {% endblock %}

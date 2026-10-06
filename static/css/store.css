@@ -1,0 +1,427 @@
+/* =========================================
+   c6 Store — Tienda online (catálogo)
+   Usa la paleta Sea de main.css y el header/footer de landing.css
+   ========================================= */
+
+.st-page {
+    background: var(--surface);
+    min-height: 100vh;
+    padding: 6.5rem 0 5rem;   /* deja lugar al header fijo */
+}
+
+/* ── Ruta ───────────────────────────────── */
+.st-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .45rem;
+    font-size: .85rem;
+    color: var(--sea-gray);
+    margin-bottom: 1rem;
+}
+
+.st-breadcrumb a {
+    color: var(--sea-mid);
+    text-decoration: none;
+}
+
+.st-breadcrumb a:hover { color: var(--sea-navy); text-decoration: underline; }
+
+.st-breadcrumb [aria-current] { color: var(--text-muted); }
+
+/* ── Encabezado ─────────────────────────── */
+.st-head { margin-bottom: 1.5rem; }
+
+.st-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 900;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+    color: var(--sea-navy);
+}
+
+.st-subtitle {
+    margin-top: .4rem;
+    color: var(--text-muted);
+    max-width: 40rem;
+}
+
+/* ── Pestañas (Todos / Polo / Básicas / Gráficas) ── */
+.st-tabs {
+    display: flex;
+    flex-wrap: wrap;          /* en celular bajan de línea en vez de quedar cortadas */
+    gap: .6rem;
+    margin-bottom: 1.25rem;
+}
+
+.st-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .55rem 1.1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    color: var(--sea-navy);
+    font-size: .9rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+
+.st-tab:hover { border-color: var(--sea-navy); }
+
+.st-tab.active {
+    background: var(--sea-navy);
+    border-color: var(--sea-navy);
+    color: #ffffff;
+}
+
+.st-tab:focus-visible { outline: 3px solid var(--sea-steel); outline-offset: 2px; }
+
+.st-tab-count {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--sea-gray);
+}
+
+.st-tab.active .st-tab-count { color: var(--sea-steel); }
+
+/* ── Barra de resultados y orden ────────── */
+.st-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    padding: .85rem 0;
+    margin-bottom: 1.75rem;
+    border-top: 1px solid var(--surface-dark);
+    border-bottom: 1px solid var(--surface-dark);
+}
+
+.st-count { font-size: .925rem; color: var(--text-muted); }
+.st-count strong { color: var(--sea-navy); }
+
+.st-sort {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .9rem;
+    color: var(--text-muted);
+}
+
+.st-sort select {
+    padding: .45rem 2rem .45rem .75rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23596b75' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right .6rem center / 14px;
+    appearance: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--sea-navy);
+    cursor: pointer;
+}
+
+.st-sort select:focus { outline: none; border-color: var(--sea-mid); box-shadow: 0 0 0 3px rgba(89,107,117,.15); }
+
+.st-sort-btn {
+    padding: .45rem .9rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--sea-navy);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ── Grilla de productos (3 columnas) ───── */
+.st-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.25rem 1.75rem;
+}
+
+.st-card { display: flex; flex-direction: column; }
+
+.st-card-media {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+    overflow: hidden;
+}
+
+.st-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;      /* muestra la prenda completa, como eBay */
+    mix-blend-mode: multiply; /* el fondo blanco de la foto se funde con el gris */
+    transition: transform .35s ease;
+}
+
+.st-card:hover .st-card-media img { transform: scale(1.04); }
+
+.st-card-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    color: var(--border);
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.st-card-placeholder svg { width: 38%; height: auto; }
+.st-card-placeholder span { color: var(--sea-gray); }
+
+.st-badge {
+    position: absolute;
+    top: .75rem;
+    left: .75rem;
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    background: var(--sea-navy);
+    color: #ffffff;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.st-card-body { padding-top: .85rem; flex: 1; }   /* empuja el botón al pie: quedan alineados en la fila */
+
+.st-card-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
+    min-height: 2.8em;        /* siempre 2 líneas: los precios quedan alineados en la fila */
+    color: var(--sea-navy);
+}
+
+.st-card-sub {
+    margin-top: .2rem;
+    font-size: .85rem;
+    color: var(--text-muted);
+}
+
+.st-card-price {
+    margin-top: .4rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    color: var(--sea-navy);
+}
+
+.st-card-meta {
+    margin-top: .15rem;
+    font-size: .85rem;
+    color: var(--sea-gray);
+}
+
+/* ── Elegir talle ────────────────────────── */
+.st-sizes {
+    border: none;
+    padding: 0;
+    margin: .9rem 0 0;
+    min-width: 0;
+}
+
+.st-sizes-label {
+    padding: 0;
+    margin-bottom: .4rem;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.st-sizes-options { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+.st-size { position: relative; cursor: pointer; }
+
+.st-size input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.st-size > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.6rem;
+    height: 2.4rem;
+    padding: 0 .6rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--sea-navy);
+    font-size: .875rem;
+    font-weight: 700;
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+
+.st-size:hover > span { border-color: var(--sea-navy); }
+
+.st-size input:checked + span {
+    background: var(--sea-navy);
+    border-color: var(--sea-navy);
+    color: #ffffff;
+}
+
+.st-size input:focus-visible + span { outline: 3px solid var(--sea-steel); outline-offset: 2px; }
+
+.st-sizes.is-invalid .st-size:not(.st-size--out) > span { border-color: #c0392b; }
+
+/* Talle agotado: visible pero tachado y no seleccionable */
+.st-size--out { cursor: not-allowed; }
+
+.st-size--out > span {
+    border-style: dashed;
+    color: var(--sea-gray);
+    background: var(--surface-alt);
+    text-decoration: line-through;
+}
+
+.st-size--out:hover > span { border-color: var(--border); }
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.st-sizes-error {
+    margin-top: .4rem;
+    font-size: .825rem;
+    font-weight: 600;
+    color: #c0392b;
+}
+
+/* ── Comprar por WhatsApp ───────────────── */
+.st-btn-wa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    width: 100%;
+    margin-top: .9rem;
+    padding: .7rem 1rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    cursor: pointer;
+    background: #0f7a6e;      /* verde WhatsApp oscurecido: contraste AA con texto blanco */
+    color: #ffffff;
+    font-size: .925rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background var(--transition), transform var(--transition);
+}
+
+.st-btn-wa svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.st-btn-wa:hover { background: #0b6358; transform: translateY(-1px); }
+
+.st-btn-wa:focus-visible { outline: 3px solid var(--sea-steel); outline-offset: 2px; }
+
+/* ── Paginación ─────────────────────────── */
+.st-pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-top: 3rem;
+}
+
+.st-page-link {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 .75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    color: var(--sea-navy);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.st-page-link:hover { border-color: var(--sea-navy); }
+
+.st-page-link.active {
+    background: var(--sea-navy);
+    border-color: var(--sea-navy);
+    color: #ffffff;
+}
+
+/* ── Sin resultados ─────────────────────── */
+.st-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+}
+
+.st-empty svg { width: 56px; height: 56px; color: var(--sea-steel); margin-bottom: 1rem; }
+
+.st-empty h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--sea-navy);
+    margin-bottom: .35rem;
+}
+
+.st-empty p { color: var(--text-muted); margin-bottom: 1.5rem; }
+.st-empty p:last-child { margin-bottom: 0; }
+
+.st-btn-dark {
+    background: var(--sea-navy);
+    color: #ffffff;
+}
+
+.st-btn-dark:hover { background: var(--sea-slate); }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 900px) {
+    .st-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 1.25rem; }
+}
+
+@media (max-width: 640px) {
+    .st-page { padding: 5.5rem 0 3.5rem; }
+    .st-grid { gap: 1.5rem .85rem; }
+    .st-card-body { padding-top: .6rem; }
+    .st-card-title { font-size: .9rem; }
+    .st-card-sub, .st-card-meta { font-size: .8rem; }
+    .st-card-price { font-size: 1.15rem; }
+    .st-badge { top: .5rem; left: .5rem; font-size: .7rem; }
+    .st-btn-wa { margin-top: .7rem; padding: .6rem .5rem; font-size: .875rem; gap: .4rem; }
+    .st-sizes { margin-top: .7rem; }
+    .st-sizes-options { gap: .3rem; }
+    .st-size > span { min-width: 2.2rem; height: 2.2rem; padding: 0 .4rem; font-size: .8rem; }
+    .st-btn-wa svg { width: 16px; height: 16px; }
+    .st-btn-wa-long { display: none; }   /* en celular: "Comprar" + ícono de WhatsApp */
+}
+
+@media (max-width: 359px) {
+    .st-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .st-card-media img, .st-btn-wa { transition: none; }
+    .st-btn-wa:hover { transform: none; }
+    .st-card:hover .st-card-media img { transform: none; }
+}

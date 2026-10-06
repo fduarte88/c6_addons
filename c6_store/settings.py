@@ -17,6 +17,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SITE_NAME = 'c6 Store'
 
+# WhatsApp que recibe los pedidos de la tienda online (formato internacional, solo dígitos).
+# Vacío = no se muestra el botón "Comprar por WhatsApp".
+STORE_WHATSAPP = '595985442209'
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -46,6 +50,7 @@ INSTALLED_APPS = [
     'purchases',
     'suppliers',
     'quotes',
+    'store',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +134,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Archivos subidos (imágenes de productos)
+MEDIA_URL  = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'

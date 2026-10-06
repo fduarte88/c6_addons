@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-244 -238 488 476" role="img" aria-label="c6 Store">
+<defs>
+    <linearGradient id="gTop" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4e4e4e"/><stop offset="1" stop-color="#7c7c7c"/></linearGradient>
+    <linearGradient id="gLU" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#858585"/><stop offset="1" stop-color="#6c6c6c"/></linearGradient>
+    <linearGradient id="gLL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a6a6a"/><stop offset="1" stop-color="#737373"/></linearGradient>
+    <linearGradient id="gBot" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#686868"/><stop offset="1" stop-color="#808080"/></linearGradient>
+    <linearGradient id="gTip" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4c4c4c"/><stop offset="1" stop-color="#6a6a6a"/></linearGradient>
+    <linearGradient id="gHL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a8a8a"/><stop offset="1" stop-color="#6e6e6e"/></linearGradient>
+    <linearGradient id="gHR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a4a4a"/><stop offset="1" stop-color="#5a5a5a"/></linearGradient>
+</defs>
+<g stroke-width="0.6" stroke-linejoin="round">
+    <polygon points="-102.5,-235.5 174.5,-235.5 241.5,-123.5 138.5,-123.5 124.5,-148.5 -52.5,-148.5" fill="url(#gTop)" stroke="url(#gTop)"/>
+    <polygon points="-102.5,-235.5 -52.5,-148.5 -138.5,0.5 -241.5,0.5" fill="url(#gLU)" stroke="url(#gLU)"/>
+    <polygon points="-241.5,0.5 -138.5,0.5 -52.5,148.5 -102.5,235.5" fill="url(#gLL)" stroke="url(#gLL)"/>
+    <polygon points="-52.5,148.5 124.5,148.5 174.5,235.5 -102.5,235.5" fill="url(#gBot)" stroke="url(#gBot)"/>
+    <polygon points="124.5,148.5 138.5,124.5 241.5,124.5 174.5,235.5" fill="url(#gTip)" stroke="url(#gTip)"/>
+    <polygon points="-3.5,-64.5 22.5,-64.5 73.5,65.5 -3.5,65.5 -41.5,0.5" fill="url(#gHL)" stroke="url(#gHL)"/>
+    <polygon points="22.5,-64.5 73.5,-64.5 111.5,0.5 73.5,65.5" fill="url(#gHR)" stroke="url(#gHR)"/>
+</g>
+</svg>

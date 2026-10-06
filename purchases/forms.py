@@ -34,14 +34,16 @@ class PurchaseForm(forms.ModelForm):
 class PurchaseItemForm(forms.ModelForm):
     class Meta:
         model  = PurchaseItem
-        fields = ['product', 'quantity', 'unit_cost']
+        fields = ['product', 'talle', 'quantity', 'unit_cost']
         labels = {
             'product':   'Producto',
+            'talle':     'Talle',
             'quantity':  'Cant.',
             'unit_cost': 'Costo unit. (Gs.)',
         }
         widgets = {
             'product':   forms.Select(attrs={'class': 'item-product'}),
+            'talle':     forms.Select(attrs={'class': 'item-talle'}),
             'quantity':  forms.NumberInput(attrs={'min': '1', 'class': 'item-qty', 'placeholder': '1'}),
             'unit_cost': forms.NumberInput(attrs={'min': '0', 'step': '1', 'class': 'item-price', 'placeholder': '0'}),
         }
@@ -54,6 +56,19 @@ class PurchaseItemForm(forms.ModelForm):
                            .order_by('description')
         )
         self.fields['product'].empty_label = 'Selecciona un producto'
+        self.fields['talle'].choices = [('', '—')] + list(Product.TALLE_CHOICES)
+
+    def clean(self):
+        cleaned = super().clean()
+        product = cleaned.get('product')
+        talle   = cleaned.get('talle', '')
+        # Producto con stock por talle: hay que indicar a qué talle entra el stock
+        if product and product.talles:
+            if talle not in product.talles:
+                self.add_error('talle', f'Elige un talle ({", ".join(product.talles)}).')
+        else:
+            cleaned['talle'] = ''
+        return cleaned
 
 
 PurchaseItemFormSet = inlineformset_factory(

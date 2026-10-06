@@ -9,7 +9,7 @@
 <div class="page-header page-header--row">
     <div>
         <h1 class="page-title">{{ product.description }}</h1>
-        <p class="page-subtitle">ID #{{ product.pk }} &mdash; {{ product.category.name }}</p>
+        <p class="page-subtitle">ID #{{ product.pk }} &mdash; {{ product.category.full_name }}</p>
     </div>
     <div style="display:flex;gap:.75rem;">
         <a href="{% url 'product_edit' product.pk %}" class="btn btn-primary">
@@ -27,6 +27,9 @@
 
     <!-- Tarjeta resumen -->
     <div class="detail-profile-card">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.description }}" class="product-detail-image">
+        {% else %}
         <div class="detail-avatar product-detail-avatar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -34,9 +37,10 @@
                 <line x1="12" y1="22.08" x2="12" y2="12"/>
             </svg>
         </div>
+        {% endif %}
         <h2 class="detail-name">{{ product.description }}</h2>
         <span class="tipo-badge tipo-{{ product.category.tipo|lower }}">
-            {{ product.category.name }}
+            {{ product.category.full_name }}
         </span>
         <span class="status-badge {% if product.is_active %}status-active{% else %}status-inactive{% endif %}">
             {% if product.is_active %}Activo{% else %}Inactivo{% endif %}
@@ -86,7 +90,7 @@
             <div class="detail-grid">
                 <div class="detail-field">
                     <span class="detail-label">Categoría</span>
-                    <span class="detail-value">{{ product.category.name }} ({{ product.category.get_tipo_display }})</span>
+                    <span class="detail-value">{{ product.category.full_name }} ({{ product.category.get_tipo_display }})</span>
                 </div>
                 <div class="detail-field">
                     <span class="detail-label">Origen</span>
@@ -98,10 +102,14 @@
                     <span class="detail-value">{{ product.calce }}</span>
                 </div>
                 {% endif %}
-                {% if product.talle %}
+                {% if product.talles %}
                 <div class="detail-field">
-                    <span class="detail-label">Talle</span>
-                    <span class="detail-value">{{ product.talle }}</span>
+                    <span class="detail-label">Stock por talle</span>
+                    <span class="detail-value size-stock-list">
+                        {% for size in product.sizes.all %}
+                        <span class="size-stock {% if not size.quantity %}is-zero{% endif %}">{{ size.talle }} <strong>{{ size.quantity }}</strong></span>
+                        {% endfor %}
+                    </span>
                 </div>
                 {% endif %}
             </div>

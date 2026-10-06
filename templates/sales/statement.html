@@ -71,7 +71,7 @@
                 <tbody>
                     {% for item in sale.items.all %}
                     <tr>
-                        <td>{{ item.product.description }}</td>
+                        <td>{{ item.product.description }}{% if item.talle %} — Talle {{ item.talle }}{% endif %}</td>
                         <td>{{ item.quantity }}</td>
                         <td class="col-price">{{ item.unit_price|gs }}</td>
                         <td class="col-price">{{ item.subtotal|gs }}</td>

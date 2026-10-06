@@ -67,8 +67,8 @@
                     {% for item in sale.items.all %}
                     <tr>
                         <td>
-                            <div class="username">{{ item.product.description }}</div>
-                            <div class="cell-sub">{{ item.product.category.name }}</div>
+                            <div class="username">{{ item.product.description }}{% if item.talle %} — Talle {{ item.talle }}{% endif %}</div>
+                            <div class="cell-sub">{{ item.product.category.full_name }}</div>
                         </td>
                         <td>{{ item.quantity }}</td>
                         <td class="col-price">{{ item.unit_price|gs }}</td>

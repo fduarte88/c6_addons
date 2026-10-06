@@ -104,8 +104,9 @@
                 <thead>
                     <tr>
                         <th style="width:10%">Código</th>
-                        <th style="width:30%">Descripción</th>
-                        <th style="width:12%">Cant.</th>
+                        <th style="width:24%">Descripción</th>
+                        <th style="width:10%">Talle</th>
+                        <th style="width:10%">Cant.</th>
                         <th style="width:20%">Precio unit. (Gs.)</th>
                         <th style="width:18%">Subtotal</th>
                         <th style="width:8%"></th>
@@ -122,6 +123,10 @@
                         </td>
                         <td>
                             <input type="text" class="item-desc field-readonly" placeholder="Descripción del producto" readonly style="width:100%;">
+                        </td>
+                        <td>
+                            {{ item_form.talle }}
+                            {% if item_form.talle.errors %}<span class="field-error">{{ item_form.talle.errors.0 }}</span>{% endif %}
                         </td>
                         <td>
                             {{ item_form.quantity }}
@@ -146,7 +151,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="items-total-row">
-                        <td colspan="4" style="text-align:right;font-weight:700;padding-right:1rem;">Total</td>
+                        <td colspan="5" style="text-align:right;font-weight:700;padding-right:1rem;">Total</td>
                         <td id="sale-total" class="col-price" style="font-weight:800;font-size:1.05rem;">Gs. 0</td>
                         <td></td>
                     </tr>
@@ -286,7 +291,33 @@ function recalcTotal() {
 const PRODUCT_SEARCH_URL = '{% url "sale_product_search_api" %}';
 const PRODUCT_LOOKUP_URL = '{% url "sale_product_lookup_api" 0 %}'.replace('/0/', '/');
 
-function setRowProduct(row, id, desc, price) {
+// Talles del producto: el select se habilita solo si el producto maneja stock por talle.
+// keep=true conserva el talle ya elegido (p. ej. al volver con errores de validación).
+function setRowSizes(row, sizes, keep) {
+    const sel = row.querySelector('.item-talle');
+    if (!sel) return;
+    const prev = keep ? sel.value : '';
+    sel.innerHTML = '';
+    if (!sizes || !sizes.length) {
+        sel.add(new Option('—', ''));
+        sel.disabled = true;
+        return;
+    }
+    sel.disabled = false;
+    sel.add(new Option('Talle', ''));
+    sizes.forEach(s => sel.add(new Option(`${s.talle} (${s.stock})`, s.talle)));
+    sel.value = sizes.some(s => s.talle === prev) ? prev : (sizes.length === 1 ? sizes[0].talle : '');
+}
+
+function resultSizes(el) {
+    return JSON.parse(decodeURIComponent(el.dataset.sizes || '%5B%5D'));
+}
+
+function sizesLabel(sizes) {
+    return sizes && sizes.length ? ' · ' + sizes.map(s => `${s.talle} ${s.stock}`).join(', ') : '';
+}
+
+function setRowProduct(row, id, desc, price, sizes) {
     const hiddenSel  = row.querySelector('.item-product');
     const codeInput  = row.querySelector('.item-code');
     const descInput  = row.querySelector('.item-desc');
@@ -303,18 +334,19 @@ function setRowProduct(row, id, desc, price) {
     if (price !== undefined && price !== null && (!priceInput.value || priceInput.value === '0')) {
         priceInput.value = Math.round(price);
     }
+    setRowSizes(row, sizes);
     recalcRow(row);
 }
 
 function lookupRowByCode(row, code) {
     const descInput = row.querySelector('.item-desc');
     const hiddenSel = row.querySelector('.item-product');
-    if (!code) { descInput.value = ''; hiddenSel.value = ''; return; }
+    if (!code) { descInput.value = ''; hiddenSel.value = ''; setRowSizes(row, []); return; }
     fetch(PRODUCT_LOOKUP_URL + code + '/')
         .then(r => r.json())
         .then(d => {
-            if (d.error) { descInput.value = '— no encontrado —'; hiddenSel.value = ''; }
-            else setRowProduct(row, d.id, d.description, d.price);
+            if (d.error) { descInput.value = '— no encontrado —'; hiddenSel.value = ''; setRowSizes(row, []); }
+            else setRowProduct(row, d.id, d.description, d.price, d.sizes);
         })
         .catch(() => { descInput.value = '— error —'; });
 }
@@ -331,6 +363,12 @@ function bindRow(row) {
         codeInput.value = hiddenSel.value;
         const selOpt = hiddenSel.options[hiddenSel.selectedIndex];
         if (selOpt) descInput.value = selOpt.text;
+        // Tras un error de validación: recupera los talles del producto sin perder el elegido
+        fetch(PRODUCT_LOOKUP_URL + hiddenSel.value + '/')
+            .then(r => r.json())
+            .then(d => setRowSizes(row, d.sizes || [], true));
+    } else {
+        setRowSizes(row, []);
     }
 
     codeInput.addEventListener('keydown', e => {
@@ -437,9 +475,9 @@ function setProductActive(idx) {
     items[productActiveIdx].scrollIntoView({ block: 'nearest' });
 }
 
-function selectProduct(id, desc, price) {
+function selectProduct(id, desc, price, sizes) {
     if (!currentProductRow) return;
-    setRowProduct(currentProductRow, id, desc, price);
+    setRowProduct(currentProductRow, id, desc, price, sizes);
     closeProductModal();
 }
 
@@ -454,7 +492,7 @@ window.addEventListener('keydown', e => {
             e.preventDefault();
             e.stopPropagation();
             const el = items[productActiveIdx];
-            selectProduct(el.dataset.id, el.dataset.desc, parseFloat(el.dataset.price));
+            selectProduct(el.dataset.id, el.dataset.desc, parseFloat(el.dataset.price), resultSizes(el));
         }
     }
 }, true);
@@ -472,13 +510,13 @@ function renderProductResults(results) {
         return;
     }
     productModalRes.innerHTML = results.map(p => `
-        <div class="modal-result-item" data-id="${p.id}" data-desc="${p.description}" data-price="${p.price}">
+        <div class="modal-result-item" data-id="${p.id}" data-desc="${p.description}" data-price="${p.price}" data-sizes="${encodeURIComponent(JSON.stringify(p.sizes || []))}">
             <span class="modal-result-code">#${p.code}</span>
             <span class="modal-result-name">${p.description}</span>
-            <span class="modal-result-doc">${fmtGs(p.price)} · stock ${p.stock}</span>
+            <span class="modal-result-doc">${fmtGs(p.price)} · stock ${p.stock}${sizesLabel(p.sizes)}</span>
         </div>`).join('');
     productModalRes.querySelectorAll('.modal-result-item').forEach(el => {
-        el.addEventListener('click', () => selectProduct(el.dataset.id, el.dataset.desc, parseFloat(el.dataset.price)));
+        el.addEventListener('click', () => selectProduct(el.dataset.id, el.dataset.desc, parseFloat(el.dataset.price), resultSizes(el)));
         el.addEventListener('mouseenter', () => {
             getProductItems().forEach(i => i.classList.remove('modal-result-active'));
             el.classList.add('modal-result-active');

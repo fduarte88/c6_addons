@@ -37,11 +37,20 @@
                 </div>
                 {% endwith %}
 
+                {% with field=form.parent %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    <small class="field-hint">Ej: "Polo" es subcategoría de "Camisetas". Se muestran como pestañas en la tienda.</small>
+                    {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+                </div>
+                {% endwith %}
+
                 {% with field=form.tipo %}
                 <div class="form-group {% if field.errors %}has-error{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
-                    <small class="field-hint">Determina si el producto requiere calce o talle.</small>
+                    <small class="field-hint" id="tipo-hint">Determina si el producto requiere calce o talle.</small>
                     {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
                 </div>
                 {% endwith %}
@@ -74,4 +83,23 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Una subcategoría hereda el tipo de su categoría padre
+(function () {
+    const parent = document.getElementById('{{ form.parent.id_for_label }}');
+    const tipo   = document.getElementById('{{ form.tipo.id_for_label }}');
+    const hint   = document.getElementById('tipo-hint');
+    const defaultHint = hint.textContent;
+    function sync() {
+        const sub = !!parent.value;
+        tipo.disabled = sub;
+        hint.textContent = sub ? 'Se hereda de la categoría padre.' : defaultHint;
+    }
+    parent.addEventListener('change', sync);
+    sync();
+})();
+</script>
 {% endblock %}

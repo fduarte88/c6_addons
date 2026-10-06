@@ -34,14 +34,16 @@ class SaleForm(forms.ModelForm):
 class SaleItemForm(forms.ModelForm):
     class Meta:
         model  = SaleItem
-        fields = ['product', 'quantity', 'unit_price']
+        fields = ['product', 'talle', 'quantity', 'unit_price']
         labels = {
             'product':    'Producto',
+            'talle':      'Talle',
             'quantity':   'Cant.',
             'unit_price': 'Precio unit. (Gs.)',
         }
         widgets = {
             'product':    forms.Select(attrs={'class': 'item-product'}),
+            'talle':      forms.Select(attrs={'class': 'item-talle'}),
             'quantity':   forms.NumberInput(attrs={'min': '1', 'class': 'item-qty', 'placeholder': '1'}),
             'unit_price': forms.NumberInput(attrs={'min': '0', 'step': '1', 'class': 'item-price', 'placeholder': '0'}),
         }
@@ -55,11 +57,23 @@ class SaleItemForm(forms.ModelForm):
                            .order_by('description')
         )
         self.fields['product'].empty_label = 'Selecciona un producto'
+        self.fields['talle'].choices = [('', '—')] + list(Product.TALLE_CHOICES)
 
     def clean(self):
         cleaned = super().clean()
         product  = cleaned.get('product')
         quantity = cleaned.get('quantity')
+        talle    = cleaned.get('talle', '')
+
+        # Producto con stock por talle: el talle es obligatorio y el stock se controla por talle
+        if product and product.talles:
+            size = product.sizes.filter(talle=talle).first() if talle else None
+            if not size:
+                self.add_error('talle', f'Elige un talle ({", ".join(product.talles)}).')
+            elif quantity and quantity > size.quantity:
+                self.add_error('quantity', f'Stock insuficiente en talle {talle}. Disponible: {size.quantity} unidad(es).')
+            return cleaned
+        cleaned['talle'] = ''
 
         if product and quantity:
             if product.quantity == 0:

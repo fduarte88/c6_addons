@@ -17,14 +17,26 @@
     <p class="confirm-text">
         Estás a punto de eliminar el producto <strong>{{ product.description }}</strong>
         (ID #{{ product.pk }}).
+        {% if in_use %}
+        <br><br>
+        <span style="color:#c0392b;font-weight:600;">
+            &#9888; Este producto tiene ventas o compras registradas y no puede eliminarse.
+            Puedes desactivarlo desde Editar.
+        </span>
+        {% else %}
         <br>Esta acción no se puede deshacer.
+        {% endif %}
     </p>
     <div class="confirm-actions">
-        <a href="{% url 'product_list' %}" class="btn btn-ghost">Cancelar</a>
+        <a href="{% url 'product_list' %}" class="btn btn-ghost">
+            {% if in_use %}Volver{% else %}Cancelar{% endif %}
+        </a>
+        {% if not in_use %}
         <form method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Sí, eliminar</button>
         </form>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

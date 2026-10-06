@@ -68,13 +68,16 @@ class SaleItem(models.Model):
                                    verbose_name='Producto')
     quantity   = models.PositiveIntegerField('Cantidad', default=1)
     unit_price = models.DecimalField('Precio unitario', max_digits=14, decimal_places=2)
+    talle      = models.CharField('Talle', max_length=5, blank=True, choices=Product.TALLE_CHOICES,
+                                  help_text='Solo si el producto maneja stock por talle')
 
     class Meta:
         verbose_name        = 'Ítem de venta'
         verbose_name_plural = 'Ítems de venta'
 
     def __str__(self):
-        return f'{self.quantity} × {self.product.description}'
+        talle = f' ({self.talle})' if self.talle else ''
+        return f'{self.quantity} × {self.product.description}{talle}'
 
     @property
     def subtotal(self):
@@ -85,27 +88,23 @@ class SaleItem(models.Model):
         if not self.unit_price:
             self.unit_price = self.product.list_price
 
-        # Descuenta stock solo al crear (no al editar)
-        is_new = self.pk is None
-        if is_new:
-            old_qty = 0
-        else:
-            old_qty = SaleItem.objects.get(pk=self.pk).quantity
-
+        old = SaleItem.objects.select_related('product').filter(pk=self.pk).first() if self.pk else None
         super().save(*args, **kwargs)
 
-        # Ajusta el stock según la diferencia de cantidad
-        diff = self.quantity - old_qty
-        if diff != 0:
-            product = self.product
-            product.quantity = max(0, product.quantity - diff)
-            product.save(update_fields=['quantity'])
+        # Descuenta stock (del talle, si corresponde). Al editar solo se mueve la diferencia;
+        # si cambió el producto o el talle, se devuelve lo anterior y se descuenta lo nuevo.
+        if old and (old.product_id, old.talle) == (self.product_id, self.talle):
+            diff = self.quantity - old.quantity
+            if diff:
+                self.product.add_stock(-diff, self.talle)
+        else:
+            if old:
+                old.product.add_stock(old.quantity, old.talle)
+            self.product.add_stock(-self.quantity, self.talle)
 
     def delete(self, *args, **kwargs):
         # Devuelve el stock al eliminar el ítem
-        product = self.product
-        product.quantity += self.quantity
-        product.save(update_fields=['quantity'])
+        self.product.add_stock(self.quantity, self.talle)
         super().delete(*args, **kwargs)
 
 

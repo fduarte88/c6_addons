@@ -1,0 +1,184 @@
+{% extends 'store/base.html' %}
+{% load static guarani %}
+
+{% block title %}{% if current %}{{ category.name }} {{ current.name|lower }}{% else %}{{ category.name }}{% endif %} — c6 Store{% endblock %}
+{% block og_title %}{{ category.name }} — c6 Store{% endblock %}
+{% block meta_description %}{{ category.name }} a la venta en c6 Store: {% for t in tabs %}{% if not forloop.first %}{{ t.label|lower }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}.{% endblock %}
+{% block header_class %}lp-header--solid{% endblock %}
+{% block nav_camisetas %}{% if category.slug == 'camisetas' %}active{% endif %}{% endblock %}
+
+{% block store_css %}
+<link rel="stylesheet" href="{% static 'css/store.css' %}?v=8">
+{% endblock %}
+
+{% block store_js %}
+<script>
+// El talle es obligatorio: sin talle elegido no se abre WhatsApp y se avisa en la tarjeta
+document.querySelectorAll('.st-buy').forEach(function (form) {
+    const sizes = form.querySelector('.st-sizes');
+    if (!sizes) return;
+    const error = sizes.querySelector('.st-sizes-error');
+    form.noValidate = true;   // mensaje propio en vez del globo del navegador
+    form.addEventListener('submit', function (e) {
+        if (form.querySelector('input[name="talle"]:checked')) return;
+        e.preventDefault();
+        sizes.classList.add('is-invalid');
+        error.hidden = false;
+        form.querySelector('input[name="talle"]:not(:disabled)').focus();
+    });
+    form.addEventListener('change', function () {
+        sizes.classList.remove('is-invalid');
+        error.hidden = true;
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<main class="st-page">
+    <div class="lp-container">
+
+        <nav class="st-breadcrumb" aria-label="Ruta de navegación">
+            <a href="{% url 'home' %}">Inicio</a>
+            {% if category.tipo != 'GEN' %}
+            <span aria-hidden="true">›</span>
+            <span>{{ category.get_tipo_display }}</span>
+            {% endif %}
+            <span aria-hidden="true">›</span>
+            {% if current %}
+            <a href="{% url 'store_category' category.slug %}">{{ category.name }}</a>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">{{ current.name }}</span>
+            {% else %}
+            <span aria-current="page">{{ category.name }}</span>
+            {% endif %}
+        </nav>
+
+        <header class="st-head">
+            <h1 class="st-title">{{ category.name }}</h1>
+            {% if category.description %}<p class="st-subtitle">{{ category.description }}</p>{% endif %}
+        </header>
+
+        {% if tabs|length > 1 %}
+        <nav class="st-tabs" aria-label="Tipos de {{ category.name|lower }}">
+            {% for t in tabs %}
+            <a href="{% url 'store_category' category.slug %}{% if t.query %}?{{ t.query }}{% endif %}"
+               class="st-tab {% if t.active %}active{% endif %}"
+               {% if t.active %}aria-current="page"{% endif %}>
+                {{ t.label }} <span class="st-tab-count">{{ t.count }}</span>
+            </a>
+            {% endfor %}
+        </nav>
+        {% endif %}
+
+        <div class="st-toolbar">
+            <p class="st-count">
+                <strong>{{ page.paginator.count }}</strong> resultado{{ page.paginator.count|pluralize }}
+            </p>
+            <form method="get" class="st-sort">
+                {% if current %}<input type="hidden" name="sub" value="{{ current.slug }}">{% endif %}
+                <label for="st-orden">Ordenar:</label>
+                <select name="orden" id="st-orden" onchange="this.form.submit()">
+                    {% for key, label in sort_options %}
+                    <option value="{{ key }}" {% if key == sort %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <noscript><button type="submit" class="st-sort-btn">Aplicar</button></noscript>
+            </form>
+        </div>
+
+        {% if page.object_list %}
+        <ul class="st-grid">
+            {% for p in page %}
+            <li class="st-card">
+                <div class="st-card-media">
+                    {% if p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.description }}" loading="lazy">
+                    {% else %}
+                    <div class="st-card-placeholder" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                        <span>Sin foto</span>
+                    </div>
+                    {% endif %}
+                    {% if p.quantity == 1 %}
+                    <span class="st-badge">¡Última unidad!</span>
+                    {% elif p.quantity <= 3 %}
+                    <span class="st-badge">¡Últimas {{ p.quantity }}!</span>
+                    {% endif %}
+                </div>
+                <div class="st-card-body">
+                    <h2 class="st-card-title">{{ p.description }}</h2>
+                    {% if not current and p.category.parent_id or not p.talles and p.size_display != '—' %}
+                    <p class="st-card-sub">
+                        {% if not current and p.category.parent_id %}{{ p.category.name }}{% endif %}
+                        {% if not p.talles and p.size_display != '—' %}{% if not current and p.category.parent_id %} · {% endif %}{{ p.size_display }}{% endif %}
+                    </p>
+                    {% endif %}
+                    <p class="st-card-price">{{ p.list_price|gs }}</p>
+                    {% if p.origin %}<p class="st-card-meta">Procedente de {{ p.origin.name }}</p>{% endif %}
+                </div>
+                {% if whatsapp %}
+                <form action="{% url 'store_whatsapp_order' p.pk %}" method="get" target="_blank" rel="noopener" class="st-buy">
+                    {% if p.talles %}
+                    <fieldset class="st-sizes">
+                        <legend class="st-sizes-label">Talle</legend>
+                        <div class="st-sizes-options">
+                            {% for size in p.sizes.all %}
+                            {% if size.quantity %}
+                            <label class="st-size">
+                                <input type="radio" name="talle" value="{{ size.talle }}" required>
+                                <span>{{ size.talle }}</span>
+                            </label>
+                            {% else %}
+                            <label class="st-size st-size--out" title="Talle {{ size.talle }} agotado">
+                                <input type="radio" name="talle" value="{{ size.talle }}" disabled>
+                                <span>{{ size.talle }}<span class="visually-hidden"> (agotado)</span></span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="st-sizes-error" role="alert" hidden>Elige un talle para comprar.</p>
+                    </fieldset>
+                    {% endif %}
+                    <button type="submit" class="st-btn-wa" aria-label="Comprar por WhatsApp: {{ p.description }}">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        <span>Comprar<span class="st-btn-wa-long"> por WhatsApp</span></span>
+                    </button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+
+        {% if page.has_other_pages %}
+        <nav class="st-pagination" aria-label="Páginas">
+            {% if page.has_previous %}
+            <a href="?{% if query %}{{ query }}&{% endif %}page={{ page.previous_page_number }}" class="st-page-link" aria-label="Página anterior">‹</a>
+            {% endif %}
+            {% for n in page.paginator.page_range %}
+                {% if n == page.number %}
+                <span class="st-page-link active" aria-current="page">{{ n }}</span>
+                {% else %}
+                <a href="?{% if query %}{{ query }}&{% endif %}page={{ n }}" class="st-page-link">{{ n }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page.has_next %}
+            <a href="?{% if query %}{{ query }}&{% endif %}page={{ page.next_page_number }}" class="st-page-link" aria-label="Página siguiente">›</a>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="st-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+            <h2>Todavía no hay {% if current %}{{ category.name|lower }} {{ current.name|lower }}{% else %}{{ category.name|lower }}{% endif %} a la venta</h2>
+            <p>Estamos preparando nuevos productos. Vuelve a visitarnos pronto.</p>
+            {% if current %}
+            <a href="{% url 'store_category' category.slug %}" class="lp-btn st-btn-dark">Ver toda la sección</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+</main>
+{% endblock %}

@@ -61,6 +61,11 @@ def purchase_create(request):
 # API — Búsqueda de productos (AJAX, para el formulario de compras)
 # ──────────────────────────────────────────
 
+def _sizes(product):
+    """Todos los talles ofrecidos (la compra puede reponer cualquiera)."""
+    return [{'talle': s.talle, 'stock': s.quantity} for s in product.sizes.all()]
+
+
 @login_required
 def purchase_product_lookup_api(request, pk):
     """Devuelve datos de un producto por su ID (código)."""
@@ -71,6 +76,7 @@ def purchase_product_lookup_api(request, pk):
             'code':        p.pk,
             'description': p.description,
             'cost':        float(p.cost),
+            'sizes':       _sizes(p),
         })
     except Product.DoesNotExist:
         return JsonResponse({'error': 'Producto no encontrado'}, status=404)
@@ -80,7 +86,7 @@ def purchase_product_lookup_api(request, pk):
 def purchase_product_search_api(request):
     """Busca productos activos por descripción o código. q='*' devuelve todos."""
     q = request.GET.get('q', '').strip()
-    base_qs = Product.objects.filter(is_active=True).order_by('description')
+    base_qs = Product.objects.filter(is_active=True).prefetch_related('sizes').order_by('description')
     if not q or q == '*':
         products = base_qs[:50]
     else:
@@ -88,7 +94,7 @@ def purchase_product_search_api(request):
             Q(description__icontains=q) | Q(pk__icontains=q)
         )[:20]
     results = [
-        {'id': p.pk, 'code': p.pk, 'description': p.description, 'cost': float(p.cost)}
+        {'id': p.pk, 'code': p.pk, 'description': p.description, 'cost': float(p.cost), 'sizes': _sizes(p)}
         for p in products
     ]
     return JsonResponse({'results': results})

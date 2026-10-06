@@ -1,6 +1,7 @@
 import io
 from datetime import date as date_type
 from decimal import Decimal
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -20,7 +21,7 @@ from reportlab.lib.units import cm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, Image
 )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -110,7 +111,7 @@ def sale_create(request):
 def sale_detail(request, pk):
     sale = get_object_or_404(
         Sale.objects.select_related('customer')
-                    .prefetch_related('items__product', 'payments'),
+                    .prefetch_related('items__product__category__parent', 'payments'),
         pk=pk
     )
     payment_form = PaymentForm(sale=sale, initial={'date': sale.date})
@@ -129,10 +130,9 @@ def sale_cancel(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
     if request.method == 'POST':
         if sale.status != Sale.STATUS_CANCELLED:
-            # Devuelve stock de cada ítem
+            # Devuelve stock de cada ítem (al talle, si corresponde)
             for item in sale.items.select_related('product').all():
-                item.product.quantity += item.quantity
-                item.product.save(update_fields=['quantity'])
+                item.product.add_stock(item.quantity, item.talle)
         sale.status = Sale.STATUS_CANCELLED
         sale.save(update_fields=['status'])
         messages.success(request, f'Venta #{sale.pk} cancelada.')
@@ -257,6 +257,11 @@ def customer_quick_create_api(request):
     return JsonResponse({'errors': form.errors.get_json_data()}, status=400)
 
 
+def _sizes_in_stock(product):
+    """Talles con stock, para que el formulario de venta ofrezca solo esos."""
+    return [{'talle': s.talle, 'stock': s.quantity} for s in product.sizes.all() if s.quantity > 0]
+
+
 @login_required
 def sale_product_lookup_api(request, pk):
     """Devuelve datos de un producto activo con stock por su ID (código)."""
@@ -268,6 +273,7 @@ def sale_product_lookup_api(request, pk):
             'description': p.description,
             'price':       float(p.distributor_price),
             'stock':       p.quantity,
+            'sizes':       _sizes_in_stock(p),
         })
     except Product.DoesNotExist:
         return JsonResponse({'error': 'Producto no encontrado o sin stock'}, status=404)
@@ -277,7 +283,7 @@ def sale_product_lookup_api(request, pk):
 def sale_product_search_api(request):
     """Busca productos activos con stock por descripción o código. q='*' devuelve todos."""
     q = request.GET.get('q', '').strip()
-    base_qs = Product.objects.filter(is_active=True, quantity__gt=0).order_by('description')
+    base_qs = Product.objects.filter(is_active=True, quantity__gt=0).prefetch_related('sizes').order_by('description')
     if not q or q == '*':
         products = base_qs[:50]
     else:
@@ -285,7 +291,8 @@ def sale_product_search_api(request):
             Q(description__icontains=q) | Q(pk__icontains=q)
         )[:20]
     results = [
-        {'id': p.pk, 'code': p.pk, 'description': p.description, 'price': float(p.distributor_price), 'stock': p.quantity}
+        {'id': p.pk, 'code': p.pk, 'description': p.description, 'price': float(p.distributor_price),
+         'stock': p.quantity, 'sizes': _sizes_in_stock(p)}
         for p in products
     ]
     return JsonResponse({'results': results})
@@ -388,9 +395,11 @@ def customer_statement_pdf(request, customer_pk):
     header_right = [
         Paragraph(f'Generado: {date_type.today().strftime("%d/%m/%Y")}', s_date_r),
     ]
+    LOGO = 1.5*cm
+    logo = Image(str(settings.BASE_DIR / 'static' / 'img' / 'c6-logo.png'), width=LOGO, height=LOGO, kind='proportional')
     header_table = Table(
-        [[header_left, header_right]],
-        colWidths=[W * 0.72, W * 0.28],
+        [[logo, header_left, header_right]],
+        colWidths=[LOGO + 0.4*cm, W * 0.72 - LOGO - 0.4*cm, W * 0.28],
     )
     header_table.setStyle(TableStyle([
         ('VALIGN',       (0, 0), (-1, -1), 'TOP'),
@@ -473,7 +482,7 @@ def customer_statement_pdf(request, customer_pk):
         ]]
         for item in sale.items.all():
             items_data.append([
-                Paragraph(item.product.description, s_normal),
+                Paragraph(item.product.description + (f' — Talle {item.talle}' if item.talle else ''), s_normal),
                 Paragraph(str(item.quantity), s_right),
                 Paragraph(_gs(item.unit_price), s_right),
                 Paragraph(_gs(item.subtotal), s_right),

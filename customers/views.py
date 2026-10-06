@@ -82,12 +82,17 @@ def customer_edit(request, pk):
 
 @login_required
 def customer_delete(request, pk):
-    customer = get_object_or_404(Customer, pk=pk)
+    customer  = get_object_or_404(Customer, pk=pk)
+    has_sales = customer.sales.exists()  # las ventas protegen al cliente (PROTECT)
 
     if request.method == 'POST':
+        if has_sales:
+            messages.error(request, f'No se puede eliminar "{customer.full_name}": tiene ventas registradas. '
+                                    'Puedes desactivarlo desde Editar.')
+            return redirect('customer_list')
         name = customer.full_name
         customer.delete()
         messages.success(request, f'Cliente "{name}" eliminado correctamente.')
         return redirect('customer_list')
 
-    return render(request, 'customers/confirm_delete.html', {'customer': customer})
+    return render(request, 'customers/confirm_delete.html', {'customer': customer, 'has_sales': has_sales})
